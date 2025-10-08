@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import AutomationStatus from '@/components/AutomationStatus';
 
 interface Signal {
   id: number;
@@ -142,6 +143,9 @@ export default function SignalsClient({ signals, filters }: SignalsClientProps) 
             <p className="subtitle mono">Active Betting Signals · {signals.length} opportunities detected</p>
           </div>
         </div>
+
+        {/* Automation Status */}
+        <AutomationStatus />
 
         {/* Sport Tabs */}
         <div className="tabs">
