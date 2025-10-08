@@ -1,13 +1,14 @@
 'use client';
 
-import { useEffect, useState, CSSProperties } from 'react';
+import { useEffect, useState } from 'react';
+import styles from './AutomationStatus.module.css';
 
 interface AutomationJob {
   name: string;
   frequency: string;
   intervalMinutes: number;
   description: string;
-  color: string;
+  colorClass: string;
 }
 
 const JOBS: AutomationJob[] = [
@@ -16,21 +17,21 @@ const JOBS: AutomationJob[] = [
     frequency: 'Every 15 minutes',
     intervalMinutes: 15,
     description: 'Fetches latest odds for NFL, NBA, NHL',
-    color: '#00a8ff',
+    colorClass: styles.colorBlue,
   },
   {
     name: 'Signal Generation',
     frequency: 'Every 20 minutes',
     intervalMinutes: 20,
     description: 'Analyzes odds and generates betting signals',
-    color: '#00ff88',
+    colorClass: styles.colorGreen,
   },
   {
     name: 'Settlement',
     frequency: 'Daily at 2:00 AM ET',
     intervalMinutes: 1440,
     description: 'Settles completed bets and updates ELO ratings',
-    color: '#a855f7',
+    colorClass: styles.colorPurple,
   },
 ];
 
@@ -68,90 +69,6 @@ function formatTimeRemaining(ms: number): string {
   }
 }
 
-const styles: { [key: string]: CSSProperties } = {
-  container: {
-    background: '#141414',
-    border: '1px solid #2a2a2a',
-    borderRadius: '8px',
-    padding: '20px',
-    marginBottom: '24px',
-  },
-  header: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    marginBottom: '20px',
-    paddingBottom: '16px',
-    borderBottom: '1px solid #2a2a2a',
-  },
-  dot: {
-    width: '12px',
-    height: '12px',
-    borderRadius: '50%',
-  },
-  dotRed: { backgroundColor: '#ff4444' },
-  dotYellow: { backgroundColor: '#fbbf24' },
-  dotGreen: { backgroundColor: '#00ff88' },
-  terminalPrompt: {
-    fontFamily: "'JetBrains Mono', monospace",
-    color: '#a0a0a0',
-    fontSize: '14px',
-    marginLeft: '8px',
-  },
-  grid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-    gap: '16px',
-  },
-  card: {
-    background: '#1a1a1a',
-    border: '1px solid #2a2a2a',
-    borderRadius: '6px',
-    padding: '16px',
-    transition: 'all 0.2s ease',
-  },
-  cardHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'baseline',
-    marginBottom: '8px',
-  },
-  jobName: {
-    fontFamily: "'JetBrains Mono', monospace",
-    fontSize: '16px',
-    fontWeight: 600,
-  },
-  frequency: {
-    fontFamily: "'JetBrains Mono', monospace",
-    fontSize: '12px',
-    color: '#666666',
-  },
-  description: {
-    fontSize: '13px',
-    color: '#a0a0a0',
-    margin: '8px 0 12px 0',
-    lineHeight: 1.5,
-  },
-  countdown: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingTop: '12px',
-    borderTop: '1px solid #333333',
-  },
-  countdownLabel: {
-    fontSize: '12px',
-    color: '#666666',
-    textTransform: 'uppercase' as const,
-    letterSpacing: '0.5px',
-  },
-  countdownValue: {
-    fontFamily: "'JetBrains Mono', monospace",
-    fontSize: '18px',
-    fontWeight: 600,
-  },
-};
-
 export default function AutomationStatus() {
   const [countdowns, setCountdowns] = useState<{ [key: string]: string }>({});
 
@@ -175,27 +92,27 @@ export default function AutomationStatus() {
   }, []);
 
   return (
-    <div style={styles.container}>
-      <div style={styles.header}>
-        <span style={{ ...styles.dot, ...styles.dotRed }}></span>
-        <span style={{ ...styles.dot, ...styles.dotYellow }}></span>
-        <span style={{ ...styles.dot, ...styles.dotGreen }}></span>
-        <span style={styles.terminalPrompt}>~/automation</span>
+    <div className={styles.container}>
+      <div className={styles.header}>
+        <span className={`${styles.dot} ${styles.dotRed}`}></span>
+        <span className={`${styles.dot} ${styles.dotYellow}`}></span>
+        <span className={`${styles.dot} ${styles.dotGreen}`}></span>
+        <span className={styles.terminalPrompt}>~/automation</span>
       </div>
 
-      <div style={styles.grid}>
+      <div className={styles.grid}>
         {JOBS.map((job) => (
-          <div key={job.name} style={styles.card}>
-            <div style={styles.cardHeader}>
-              <span style={{ ...styles.jobName, color: job.color }}>
+          <div key={job.name} className={styles.card}>
+            <div className={styles.cardHeader}>
+              <span className={`${styles.jobName} ${job.colorClass}`}>
                 {job.name}
               </span>
-              <span style={styles.frequency}>{job.frequency}</span>
+              <span className={styles.frequency}>{job.frequency}</span>
             </div>
-            <p style={styles.description}>{job.description}</p>
-            <div style={styles.countdown}>
-              <span style={styles.countdownLabel}>Next run in:</span>
-              <span style={{ ...styles.countdownValue, color: job.color }}>
+            <p className={styles.description}>{job.description}</p>
+            <div className={styles.countdown}>
+              <span className={styles.countdownLabel}>Next run in:</span>
+              <span className={`${styles.countdownValue} ${job.colorClass}`}>
                 {countdowns[job.name] || '...'}
               </span>
             </div>
