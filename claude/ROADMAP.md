@@ -2,8 +2,8 @@
 
 **Last Updated:** October 8, 2025
 **Current Phase:** Production Baseline Complete → Phase 1 Enhancements
-**System Status:** ✅ 100% Operational (853 Active Signals)
-**Latest:** Dashboard UI redesigned with techy/hackery theme, sortable table, sport tabs
+**System Status:** ✅ 100% Operational with Full Automation (1120 Active Signals)
+**Latest:** GitHub Actions automation live, multi-sport workflows (NFL/NBA/NHL), AutomationStatus component with live countdown timers
 
 ---
 
@@ -177,7 +177,6 @@ make settle
 #### 4. Safety Rails
 - 20% edge cap with logging for outliers
 - Skip signals with missing selection data
-- Enhanced logging with fair vs implied probabilities
 
 #### 5. Dashboard UI Redesign (Oct 8, 2025)
 **Changes:**
@@ -198,6 +197,51 @@ make settle
 - `apps/dashboard/app/signals/SignalsClient.tsx` (table layout with sorting)
 - `apps/dashboard/actions/signals.ts` (added league/game_time fields, removed LIMIT)
 
+#### 6. Automation Status Component (Oct 8, 2025)
+**Added:**
+- Live countdown timers for all three automated workflows
+- Real-time updates every second using React hooks
+- Terminal-style design matching dashboard aesthetic
+- Three job cards: Odds ETL, Signal Generation, Settlement
+- Shows frequency, description, and time until next run
+
+**Implementation:**
+- Client component with `useState` and `useEffect`
+- CSS Modules for scoped, maintainable styling
+- Calculates next run time based on interval or daily schedule
+- Formats remaining time (seconds, minutes, or hours)
+
+**Result:** Users can see automation status at a glance
+
+**Files Changed:**
+- `apps/dashboard/components/AutomationStatus.tsx` (new component)
+- `apps/dashboard/components/AutomationStatus.module.css` (new CSS Module)
+- `apps/dashboard/app/signals/SignalsClient.tsx` (integrated component)
+
+#### 7. GitHub Actions Automation (Oct 8, 2025)
+**Implemented:**
+- Three automated workflows running 7 days/week for NBA/NHL coverage
+- Secrets configured in GitHub repository settings
+- Fixed command-line flags (`--league` → `--leagues`)
+- Multi-sport support across all workflows
+
+**Workflows:**
+- **Odds ETL** (`odds_etl.yml`): Every 15 minutes, fetches NFL/NBA/NHL odds
+- **Signal Generation** (`generate_signals.yml`): Every 20 minutes, generates signals for all sports
+- **Settlement** (`settle_results.yml`): Daily at 2 AM ET, settles bets and updates ELO
+
+**Configuration:**
+- GitHub Secrets: `DATABASE_URL`, `THE_ODDS_API_KEY`, `SLACK_WEBHOOK_URL`
+- All scripts use `--leagues nfl,nba,nhl` flag
+- Environment variables passed from workflow to scripts
+
+**Result:** Fully automated data pipeline running 24/7
+
+**Files Changed:**
+- `.github/workflows/odds_etl.yml` (schedule changed to `*/15 * * * *`, multi-sport)
+- `.github/workflows/generate_signals.yml` (schedule changed to `*/20 * * * *`, multi-sport, fixed flags)
+- `.github/workflows/settle_results.yml` (fixed flags, multi-sport)
+
 ### Database Schema (11 Tables)
 
 ```
@@ -207,7 +251,7 @@ games (30 NFL, 2 NBA, 18 NHL upcoming)
   ↓
 odds_snapshots (2,566 rows with selection data) ← **IMMUTABLE** (never UPDATE)
   ↓
-signals (875 active, auto-expire based on sport)
+signals (1120 active, auto-expire based on sport)
   ↓
 team_elos (dynamic ratings, update on settlement)
   ↓

@@ -1,7 +1,7 @@
 # SportsEdge - Project Context for Claude Code
 
 **Last Updated:** October 8, 2025
-**Status:** Production-Ready Baseline (875 Active Signals)
+**Status:** Production-Ready with Automation (1120 Active Signals)
 
 ---
 
@@ -19,7 +19,7 @@ SportsEdge is an **AI-assisted sports betting research platform** for analyzing 
 - **Frontend:** Next.js 14 (read-only dashboard)
 - **Database:** PostgreSQL (Neon) - 11 tables
 - **Data Source:** The Odds API (ToS-compliant)
-- **Automation:** Makefile commands, GitHub Actions (future)
+- **Automation:** Makefile commands, GitHub Actions (active)
 
 ---
 
@@ -107,6 +107,22 @@ Odds → ELO Model → Fair Probability → Edge Calculation → Signal (if ≥ 
 - Updates after each settlement
 - Tracked in `elo_history` table
 
+### 6. Automated Workflows (GitHub Actions)
+
+**Active Automation:**
+- **Odds ETL:** Every 15 minutes, 7 days/week (NFL, NBA, NHL)
+- **Signal Generation:** Every 20 minutes, 7 days/week (all sports)
+- **Settlement:** Daily at 2 AM ET (settles bets, updates ELO)
+
+**Configuration:** Workflows in `.github/workflows/` use GitHub Secrets for credentials
+
+### 7. Dashboard UI
+
+- **Framework:** Next.js 14 with CSS Modules
+- **Features:** Sortable table, sport tabs (ALL, NFL, NBA, NHL), live automation status
+- **Automation Status Component:** Real-time countdown timers for next ETL/signal/settlement run
+- **Styling:** Dark theme with terminal aesthetic, monospace fonts, color-coded signals
+
 ---
 
 ## File Structure
@@ -144,8 +160,14 @@ ops/scripts/
 ```
 apps/dashboard/
 ├── app/
-│   ├── signals/page.tsx     # Active signals view
+│   ├── signals/
+│   │   ├── page.tsx         # Server component (data fetching)
+│   │   └── SignalsClient.tsx # Client component (sortable table, tabs)
+│   ├── globals.css          # Dark theme CSS variables
 │   └── bets/page.tsx        # Bet history (placeholder)
+├── components/
+│   ├── AutomationStatus.tsx # Live countdown timers for workflows
+│   └── AutomationStatus.module.css # CSS Module styling
 ├── actions/
 │   └── signals.ts           # Database queries (read-only)
 └── lib/
@@ -158,6 +180,11 @@ apps/dashboard/
 infra/migrations/
 ├── 0001_init.sql            # Full schema (11 tables)
 └── 0004_add_selection_to_odds.sql  # Selection tracking (critical fix)
+
+.github/workflows/
+├── odds_etl.yml             # Automated odds fetching (15 min)
+├── generate_signals.yml     # Automated signal generation (20 min)
+└── settle_results.yml       # Automated settlement (daily 2 AM ET)
 ```
 
 ### Documentation
