@@ -2,7 +2,8 @@
 
 **Last Updated:** October 8, 2025
 **Current Phase:** Production Baseline Complete → Phase 1 Enhancements
-**System Status:** ✅ 100% Operational (875 Active Signals)
+**System Status:** ✅ 100% Operational (853 Active Signals)
+**Latest:** Dashboard UI redesigned with techy/hackery theme, sortable table, sport tabs
 
 ---
 
@@ -79,14 +80,14 @@ make settle
 
 | Metric | Value | Status |
 |--------|-------|--------|
-| **Total Active Signals** | 875 | ✅ Excellent |
+| **Total Active Signals** | 853 | ✅ Excellent |
 | **NFL Signals** | 834 (10.95% avg edge) | ✅ High volume |
 | **NBA Signals** | 19 (11.87% avg edge) | ⚠️ Low (season starts Oct 21) |
-| **NHL Signals** | 22 (11.44% avg edge) | ⚠️ Low (many totals >20% edge) |
-| **Games in Pipeline** | 50 (30 NFL, 2 NBA, 18 NHL) | ✅ Good coverage |
-| **Odds Snapshots** | 2,566 | ✅ Comprehensive |
+| **NHL Signals** | 0 | ⚠️ No current games |
+| **Games in Pipeline** | 50+ | ✅ Good coverage |
+| **Odds Snapshots** | 2,566+ | ✅ Comprehensive |
 | **API Quota Usage** | ~462/500 | ✅ Within limits |
-| **Dashboard** | localhost:3000 | ✅ Live |
+| **Dashboard** | localhost:3000 | ✅ Live (redesigned UI) |
 
 ### ✅ Fully Operational Features
 
@@ -177,6 +178,25 @@ make settle
 - 20% edge cap with logging for outliers
 - Skip signals with missing selection data
 - Enhanced logging with fair vs implied probabilities
+
+#### 5. Dashboard UI Redesign (Oct 8, 2025)
+**Changes:**
+- Redesigned from basic table to professional techy/hackery dark theme
+- Terminal-style header with colored dots (red/yellow/green)
+- Sport tabs with counts (ALL, NFL, NBA, NHL)
+- Sortable table with 11 columns (click headers to sort)
+- Color-coded edge percentages (green ≥5%, cyan ≥3%, yellow ≥2%)
+- Hover effects with accent border highlighting
+- Monospace fonts (JetBrains Mono) for numeric values
+- Removed 100-signal LIMIT for full dataset display
+
+**Result:** Clean, data-dense interface optimized for comparing signals at a glance
+
+**Files Changed:**
+- `apps/dashboard/app/globals.css` (new dark theme CSS variables)
+- `apps/dashboard/app/layout.tsx` (font imports)
+- `apps/dashboard/app/signals/SignalsClient.tsx` (table layout with sorting)
+- `apps/dashboard/actions/signals.ts` (added league/game_time fields, removed LIMIT)
 
 ### Database Schema (11 Tables)
 

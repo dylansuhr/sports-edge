@@ -23,6 +23,8 @@ export interface Signal {
   home_team?: string;
   away_team?: string;
   player_name?: string;
+  league?: string;
+  game_time?: string;
 }
 
 export interface SignalFilters {
@@ -55,6 +57,7 @@ export async function getActiveSignals(filters?: SignalFilters): Promise<Signal[
       m.name as market_name,
       m.category as market_category,
       g.sport as league,
+      g.scheduled_at as game_time,
       t_home.name as home_team,
       t_away.name as away_team,
       p.name as player_name,
@@ -101,7 +104,6 @@ export async function getActiveSignals(filters?: SignalFilters): Promise<Signal[
 
   sql += `
     ORDER BY s.edge_percent DESC, s.generated_at DESC
-    LIMIT 100
   `;
 
   return await query<Signal>(sql, params);
