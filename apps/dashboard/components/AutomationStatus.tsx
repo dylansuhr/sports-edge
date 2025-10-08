@@ -52,7 +52,11 @@ function getNextRunTime(intervalMinutes: number): Date {
     // For interval-based jobs, calculate next interval boundary
     const nowMs = now.getTime();
     const intervalMs = intervalMinutes * 60 * 1000;
-    const nextMs = Math.ceil(nowMs / intervalMs) * intervalMs;
+
+    // Find the next interval boundary
+    const intervalsPassed = Math.floor(nowMs / intervalMs);
+    const nextMs = (intervalsPassed + 1) * intervalMs;
+
     return new Date(nextMs);
   }
 }
