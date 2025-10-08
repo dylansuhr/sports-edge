@@ -1,0 +1,9 @@
+game_id,home_team,away_team,scheduled_at,sportsbook,market_type,team_or_outcome,line_value,odds_american
+nfl_2025_wk1_gb_phi,Packers,Eagles,2025-10-09T20:15:00Z,draftkings,spread,Packers,-3.5,-110
+nfl_2025_wk1_gb_phi,Packers,Eagles,2025-10-09T20:15:00Z,draftkings,spread,Eagles,3.5,-110
+nfl_2025_wk1_gb_phi,Packers,Eagles,2025-10-09T20:15:00Z,caesars,spread,Packers,-3.5,-105
+nfl_2025_wk1_gb_phi,Packers,Eagles,2025-10-09T20:15:00Z,caesars,spread,Eagles,3.5,-115
+nfl_2025_wk1_gb_phi,Packers,Eagles,2025-10-09T20:15:00Z,draftkings,h2h,Packers,,-165
+nfl_2025_wk1_gb_phi,Packers,Eagles,2025-10-09T20:15:00Z,draftkings,h2h,Eagles,,145
+nfl_2025_wk1_gb_phi,Packers,Eagles,2025-10-09T20:15:00Z,draftkings,totals,Over,45.5,-110
+nfl_2025_wk1_gb_phi,Packers,Eagles,2025-10-09T20:15:00Z,draftkings,totals,Under,45.5,-110

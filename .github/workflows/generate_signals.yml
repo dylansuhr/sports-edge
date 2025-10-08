@@ -1,0 +1,50 @@
+name: Generate Signals
+
+on:
+  schedule:
+    # Run every 20 minutes during NFL season (Thu-Mon)
+    - cron: '*/20 * * * 4-1'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  generate-signals:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r packages/models/requirements.txt
+
+      - name: Generate betting signals
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          USE_API: true
+          DATA_PROVIDER: theoddsapi
+          LEAGUES: nfl
+          EDGE_SIDES: "0.02"
+          EDGE_PROPS: "0.03"
+          KELLY_FRACTION: "0.25"
+          MAX_STAKE_PCT: "0.01"
+          BANKROLL: "1000.0"
+        run: |
+          python ops/scripts/generate_signals_v2.py --league nfl
+
+      - name: Notify on failure
+        if: failure()
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          curl -X POST $SLACK_WEBHOOK_URL \
+            -H 'Content-Type: application/json' \
+            -d '{"text":"⚠️ Signal generation failed - check GitHub Actions logs"}'

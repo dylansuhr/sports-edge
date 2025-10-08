@@ -1,0 +1,33 @@
+#!/bin/bash
+# Pre-commit hook to prevent committing secrets
+
+echo "🔒 Checking for secrets in staged files..."
+
+# Check for staged .env files
+if git diff --cached --name-only | grep -qE '^\.env$|^\.env\.local$|^apps/dashboard/\.env\.local$'; then
+    echo "❌ ERROR: Attempting to commit environment file with secrets!"
+    echo "   Found: $(git diff --cached --name-only | grep -E '^\.env$|^\.env\.local$|^apps/dashboard/\.env\.local$')"
+    echo "   These files should NEVER be committed."
+    exit 1
+fi
+
+# Check for secret patterns in staged content
+SECRET_PATTERNS=(
+    "DATABASE_URL=postgresql://.*:.*@"
+    "THE_ODDS_API_KEY=[a-zA-Z0-9_-]{20,}"
+    "SLACK_WEBHOOK_URL=https://hooks.slack.com"
+    "password.*=.*[^placeholder]"
+    "api.*key.*=.*[^placeholder]"
+)
+
+for pattern in "${SECRET_PATTERNS[@]}"; do
+    if git diff --cached | grep -qiE "$pattern"; then
+        echo "❌ ERROR: Potential secret detected in staged changes!"
+        echo "   Pattern matched: $pattern"
+        echo "   Please remove secrets before committing."
+        exit 1
+    fi
+done
+
+echo "✅ No secrets detected. Proceeding with commit."
+exit 0

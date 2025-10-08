@@ -1,0 +1,8 @@
+{
+  "name": "sports-edge-root",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
+  "devDependencies": {}
+}
