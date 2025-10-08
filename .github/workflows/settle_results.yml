@@ -31,9 +31,10 @@ jobs:
           THE_ODDS_API_KEY: ${{ secrets.THE_ODDS_API_KEY }}
           USE_API: true
           DATA_PROVIDER: theoddsapi
-          LEAGUES: nfl
+          LEAGUES: nfl,nba,nhl
+          SETTLEMENT_LOOKBACK_DAYS: "2"
         run: |
-          python ops/scripts/settle_results_v2.py --league nfl --days 1
+          python ops/scripts/settle_results_v2.py --leagues nfl,nba,nhl
 
       - name: Notify on failure
         if: failure()

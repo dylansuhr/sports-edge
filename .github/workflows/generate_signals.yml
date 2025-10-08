@@ -31,14 +31,15 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           USE_API: true
           DATA_PROVIDER: theoddsapi
-          LEAGUES: nfl
+          LEAGUES: nfl,nba,nhl
           EDGE_SIDES: "0.02"
           EDGE_PROPS: "0.03"
           KELLY_FRACTION: "0.25"
           MAX_STAKE_PCT: "0.01"
           BANKROLL: "1000.0"
+          SIGNAL_LOOKAHEAD_HOURS: "336"
         run: |
-          python ops/scripts/generate_signals_v2.py --league nfl
+          python ops/scripts/generate_signals_v2.py --leagues nfl
 
       - name: Notify on failure
         if: failure()

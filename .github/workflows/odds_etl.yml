@@ -31,9 +31,9 @@ jobs:
           THE_ODDS_API_KEY: ${{ secrets.THE_ODDS_API_KEY }}
           USE_API: true
           DATA_PROVIDER: theoddsapi
-          LEAGUES: nfl
+          LEAGUES: nfl,nba,nhl
         run: |
-          python ops/scripts/odds_etl_v2.py --leagues nfl
+          python ops/scripts/odds_etl_v2.py --leagues nfl,nba,nhl
 
       - name: Notify on failure
         if: failure()
