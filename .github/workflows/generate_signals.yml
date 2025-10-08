@@ -2,8 +2,8 @@ name: Generate Signals
 
 on:
   schedule:
-    # Run every 20 minutes during NFL season (Thu-Mon)
-    - cron: '*/20 * * * 4-1'
+    # Run every 20 minutes every day (NFL Thu-Mon, NBA/NHL play all week)
+    - cron: '*/20 * * * *'
   workflow_dispatch: # Allow manual trigger
 
 jobs:
@@ -39,7 +39,7 @@ jobs:
           BANKROLL: "1000.0"
           SIGNAL_LOOKAHEAD_HOURS: "336"
         run: |
-          python ops/scripts/generate_signals_v2.py --leagues nfl
+          python ops/scripts/generate_signals_v2.py --leagues nfl,nba,nhl
 
       - name: Notify on failure
         if: failure()

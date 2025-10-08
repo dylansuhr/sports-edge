@@ -2,8 +2,8 @@ name: Odds ETL
 
 on:
   schedule:
-    # Run every 15 minutes during NFL season (Thu-Mon)
-    - cron: '*/15 * * * 4-1'
+    # Run every 15 minutes every day (NFL Thu-Mon, NBA/NHL play all week)
+    - cron: '*/15 * * * *'
   workflow_dispatch: # Allow manual trigger
 
 jobs:
