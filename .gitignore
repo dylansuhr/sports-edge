@@ -59,3 +59,9 @@ logs/
 # Temporary
 tmp/
 temp/
+
+# Extra safety - never commit these
+*.key
+*.pem
+credentials.json
+secrets.json
