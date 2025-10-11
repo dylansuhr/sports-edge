@@ -1,9 +1,9 @@
 # SportsEdge - Complete Roadmap & Status
 
-**Last Updated:** October 8, 2025
-**Current Phase:** Production Baseline Complete → Phase 1 Enhancements
-**System Status:** ✅ 100% Operational with Full Automation (1120 Active Signals)
-**Latest:** GitHub Actions automation live, multi-sport workflows (NFL/NBA/NHL), AutomationStatus component with live countdown timers
+**Last Updated:** October 10, 2025
+**Current Phase:** Autonomous Learning System (COMPLETE ✅)
+**System Status:** ✅ 100% Operational with Full Automation (106,000+ Total Signals)
+**Latest:** ✅ Performance dashboard with charts, ✅ Autonomous learning system, ✅ Model readiness indicator
 
 ---
 
@@ -401,62 +401,176 @@ def calculate_expiry_time(self, game_scheduled_at, sport):
 
 ---
 
-## Phase 1: Model Refinement (NEXT)
+## Recent Enhancements (Oct 10, 2025)
 
-**Status:** Ready to start
-**Timeline:** 2-3 weeks
-**Priority:** High
+### ✅ Completed: Paired Vig Removal
 
-### 1.1 Vig Removal Enhancement
-
-**Current:** Uses raw implied probabilities from individual odds
-**Target:** Paired vig removal (same book, same timestamp)
-
-```python
-# For each book/timestamp/game/market:
-implied_home, implied_away = remove_vig_multiplicative(prob_home_raw, prob_away_raw)
-# Then compare to fair probabilities
-```
-
-**Impact:** Will reduce edges by 2-4%, bringing them closer to realistic 3-7% range
+**Impact:** Reduces edges by 1.26% average, more accurate probability calculations
 
 **Implementation:**
-1. Modify `generate_signals_v2.py` to group odds by (book, timestamp, game, market)
-2. For paired markets (moneyline, spread), apply vig removal
-3. For totals, apply two-way vig removal (Over vs Under)
-4. Update edge calculation to use vig-removed implied probs
+- Added `_group_odds_for_vig_removal()` to group paired odds by market/sportsbook
+- Added `_get_devigged_probability()` to apply multiplicative vig removal
+- Created migration `0005_add_raw_implied_prob.sql` to track both raw and devigged probabilities
+- Updated `db.py` to store `raw_implied_probability` separately
 
-**Files:** `ops/scripts/generate_signals_v2.py`
+**Results:**
+- Moneylines: 1.38-3.82% vig removed per selection
+- Totals: 1.69-3.05% vig removed
+- Spreads: Correctly uses raw prob (API only provides one side)
+- Average edge reduced from ~11% to ~10.3% (more realistic)
 
-**Estimated Effort:** 4-6 hours
+**Files:** `ops/scripts/generate_signals_v2.py`, `packages/shared/shared/db.py`, `infra/migrations/0005_add_raw_implied_prob.sql`
 
 ---
 
-### 1.2 Team-Specific Total Models
+### ✅ Completed: CLV (Closing Line Value) Tracking
 
-**Current:** Uses league average (45 points for NFL)
-**Target:** Team offensive/defensive ratings
-
-```python
-# Calculate expected points per team
-expected_total = (team_a_offensive_rating + team_b_defensive_rating) / 2 * 2
-# Adjust for pace and venue
-```
-
-**Impact:** More accurate total predictions, reduces 10-15% false edges
+**Impact:** Gold standard for measuring model performance, independent of bet outcomes
 
 **Implementation:**
-1. Add `offensive_rating` and `defensive_rating` columns to `team_elos` table
-2. Calculate rolling averages from historical games (last 10 games)
-3. Update `calculate_fair_probability()` for totals to use team-specific ratings
-4. Incorporate pace adjustments (possessions per game)
+- Created `ops/scripts/capture_closing_lines.py` - fetches odds before games start
+- Created `ops/scripts/clv_report.py` - comprehensive performance analysis
+- Migration `0006_add_signal_clv_tracking.sql` - added CLV columns to signals
+- Added `make clv` and `make clv-report` commands
+
+**Features:**
+- Automatic closing line capture (run 10-30 min before games)
+- Performance reports: Overall CLV, by sport, by market, by confidence
+- Interpretation guidance (excellent/good/neutral/poor)
+- Target metrics: >0.5% avg CLV, >52% beat closing line rate
+
+**Files:** `ops/scripts/capture_closing_lines.py`, `ops/scripts/clv_report.py`, `infra/migrations/0006_add_signal_clv_tracking.sql`, `Makefile`
+
+---
+
+### ✅ Completed: Team-Specific Total Models (Fully Integrated)
+
+**Status:** ✅ Complete and operational
+
+---
+
+### ✅ Completed: Autonomous Learning System (Oct 10, 2025)
+
+**Impact:** Fully automated model that learns and evolves without manual intervention
+
+**Implementation:**
+- Created `ops/scripts/auto_analyze_performance.py` - weekly performance analysis engine
+- Created `ops/scripts/auto_tune_parameters.py` - autonomous parameter tuning based on CLV
+- Created `.github/workflows/capture_closing_lines.yml` - captures closing lines every 30 minutes
+- Created `.github/workflows/weekly_performance_analysis.yml` - Sunday 9 AM ET analysis
+- Created performance dashboard at `/performance` with line charts and readiness indicator
+
+**Features:**
+1. **Automated CLV Capture** - Every 30 minutes before games
+2. **Weekly Performance Analysis**:
+   - Overall CLV, beat closing %, edge analysis
+   - By sport, by market, by confidence level
+   - Automated recommendations for parameter adjustments
+   - Database logging of all analysis
+3. **Autonomous Parameter Tuning**:
+   - Adjusts EDGE_SIDES based on CLV performance
+   - Adjusts KELLY_FRACTION based on variance
+   - Conservative changes (max 20% per adjustment)
+   - Dry-run mode for safety
+4. **Performance Dashboard**:
+   - Model readiness indicator (Ready/Monitor/Not Ready/Insufficient Data)
+   - CLV trend line chart (30 days)
+   - Beat closing % line chart (30 days)
+   - Performance by sport (bar chart)
+   - Performance by market (bar chart)
+   - Statistical summary (median, std dev, percentiles)
+   - Navigation with Signals/Performance/My Bets tabs
+
+**Model Readiness Criteria:**
+- ✅ Ready: CLV ≥ 0.5%, Beat Close ≥ 52%, 100+ signals
+- ⚠️ Monitor: CLV ≥ 0%, Beat Close ≥ 50%, 100+ signals
+- ❌ Not Ready: Below thresholds, 100+ signals
+- 📊 Insufficient Data: < 100 signals with CLV
 
 **Files:**
-- `infra/migrations/0005_add_team_ratings.sql`
-- `packages/models/models/features.py`
-- `ops/scripts/generate_signals_v2.py`
+- `ops/scripts/auto_analyze_performance.py` (new)
+- `ops/scripts/auto_tune_parameters.py` (new)
+- `.github/workflows/capture_closing_lines.yml` (new)
+- `.github/workflows/weekly_performance_analysis.yml` (new)
+- `apps/dashboard/actions/performance.ts` (new)
+- `apps/dashboard/app/performance/page.tsx` (new)
+- `apps/dashboard/app/performance/PerformanceCharts.tsx` (new)
+- `apps/dashboard/components/ModelReadinessCard.tsx` (new)
+- `apps/dashboard/components/Navigation.tsx` (new)
+- `apps/dashboard/app/layout.tsx` (updated with navigation)
 
-**Estimated Effort:** 8-10 hours
+---
+
+### ✅ Phase 1 Complete Summary
+
+All 4 core enhancements completed:
+1. ✅ Paired vig removal (1.26% avg reduction)
+2. ✅ CLV tracking (gold standard metric)
+3. ✅ Team-specific total models (exponential moving average ratings)
+4. ✅ Early-season sample size filter (min 3 games)
+
+**Implementation:**
+- Added `offensive_ratings` and `defensive_ratings` dicts to `NFLFeatureGenerator`
+- Created `update_offensive_rating()` - tracks team scoring ability (exponential moving average)
+- Created `update_defensive_rating()` - tracks defensive strength (exponential moving average)
+- Created `calculate_expected_total()` - team-specific total predictions
+- **Integrated into signal generation** - replaces league averages with team-specific calculations
+- **Integrated into settlement** - updates offensive/defensive ratings after each game
+- Sport-specific standard deviations (NFL: 10.0, NBA: 12.0, NHL: 2.5)
+
+**Features:**
+- Team-specific scoring projections (league avg + offensive rating + opponent defensive rating)
+- Home field advantage built-in (+2.5 points for NFL)
+- Exponential moving average (α=0.15, ~6 game window)
+- Opponent-adjusted ratings (accounts for strength of opposition)
+
+**Expected Impact:**
+- Reduces false positive signals on totals by 20-30%
+- More accurate NHL/NBA total predictions (15%+ edges → 5-8%)
+- Improves as more games are settled and ratings stabilize
+
+**Files:** `packages/models/models/features.py`, `ops/scripts/generate_signals_v2.py`, `ops/scripts/settle_results_v2.py`
+
+---
+
+### ✅ Completed: Early-Season Sample Size Filter
+
+**Status:** ✅ Complete and operational
+
+**Implementation:**
+- Added `get_team_games_played()` to check settled game count
+- Minimum sample size: 3 games per team
+- Automatic confidence downgrade for insufficient sample
+  - High → Medium
+  - Medium → Low
+  - Low → Low (unchanged)
+
+**Features:**
+- Warns when teams have < 3 games played
+- Reduces false confidence in early-season signals
+- Prevents over-betting on untested teams
+- Gradually allows higher confidence as season progresses
+
+**Impact:**
+- Protects against early-season ELO rating volatility
+- Reduces risk during model calibration period
+- More conservative approach aligns with patient growth strategy
+
+**Files:** `ops/scripts/generate_signals_v2.py`
+
+---
+
+## Phase 1: Model Refinement (IN PROGRESS)
+
+**Status:** 4 of 4 core items completed ✅
+**Timeline:** 2-3 weeks (started Oct 10)
+**Priority:** High
+
+**Completed Items:**
+1. ✅ Paired vig removal (1.26% avg reduction)
+2. ✅ CLV tracking (gold standard performance metric)
+3. ✅ Team-specific total models (fully integrated)
+4. ✅ Early-season sample size filter (confidence downgrade)
 
 ---
 
@@ -493,11 +607,11 @@ expected_total = (team_a_offensive_rating + team_b_defensive_rating) / 2 * 2
 
 ---
 
-## Phase 2: Automation & Monitoring
+## Phase 2: Autonomous Learning System ✅ COMPLETE
 
-**Status:** Planning
-**Timeline:** 1-2 months
-**Priority:** Medium
+**Status:** ✅ Fully Operational
+**Completed:** October 10, 2025
+**Priority:** High
 
 ### 2.1 Scheduled Signal Regeneration
 

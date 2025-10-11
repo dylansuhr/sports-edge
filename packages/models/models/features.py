@@ -29,6 +29,10 @@ class NFLFeatureGenerator:
         self.home_advantage = home_advantage
         self.team_elos = {}  # team_id -> current ELO rating
 
+        # Offensive/Defensive ratings (points per game above/below average)
+        self.offensive_ratings = {}  # team_id -> offensive rating
+        self.defensive_ratings = {}  # team_id -> defensive rating
+
     def initialize_elos(self, teams: list, default_elo: float = 1500.0):
         """Initialize all teams to default ELO rating."""
         for team_id in teams:
@@ -285,6 +289,80 @@ class NFLFeatureGenerator:
     def get_team_elo(self, team_id: int) -> float:
         """Get current ELO rating for a team."""
         return self.team_elos.get(team_id, 1500.0)
+
+    def update_offensive_rating(self, team_id: int, points_scored: float, opponent_def_rating: float = 0.0):
+        """
+        Update team's offensive rating based on points scored.
+
+        Rating represents points per game above/below league average.
+        Uses exponential moving average for responsiveness.
+        """
+        if team_id not in self.offensive_ratings:
+            self.offensive_ratings[team_id] = 0.0
+
+        # Adjust for opponent defensive strength
+        adjusted_points = points_scored - opponent_def_rating
+
+        # Exponential moving average (alpha = 0.15 for ~6 game window)
+        alpha = 0.15
+        self.offensive_ratings[team_id] = (
+            alpha * adjusted_points + (1 - alpha) * self.offensive_ratings[team_id]
+        )
+
+    def update_defensive_rating(self, team_id: int, points_allowed: float, opponent_off_rating: float = 0.0):
+        """
+        Update team's defensive rating based on points allowed.
+
+        Rating represents points per game allowed above/below league average.
+        Negative is good defense (allows fewer points).
+        """
+        if team_id not in self.defensive_ratings:
+            self.defensive_ratings[team_id] = 0.0
+
+        # Adjust for opponent offensive strength
+        adjusted_points = points_allowed - opponent_off_rating
+
+        # Exponential moving average
+        alpha = 0.15
+        self.defensive_ratings[team_id] = (
+            alpha * adjusted_points + (1 - alpha) * self.defensive_ratings[team_id]
+        )
+
+    def calculate_expected_total(
+        self,
+        home_team_id: int,
+        away_team_id: int,
+        league_avg_ppg: float = 22.5  # NFL average points per team
+    ) -> Tuple[float, float, float]:
+        """
+        Calculate expected game total using team offensive/defensive ratings.
+
+        Args:
+            home_team_id: Home team ID
+            away_team_id: Away team ID
+            league_avg_ppg: League average points per team per game
+
+        Returns:
+            Tuple of (expected_home_points, expected_away_points, expected_total)
+        """
+        # Get ratings (default to 0 = league average)
+        home_off = self.offensive_ratings.get(home_team_id, 0.0)
+        home_def = self.defensive_ratings.get(home_team_id, 0.0)
+        away_off = self.offensive_ratings.get(away_team_id, 0.0)
+        away_def = self.defensive_ratings.get(away_team_id, 0.0)
+
+        # Home team expected points: league avg + their offense + opponent defense
+        home_points = league_avg_ppg + home_off + away_def
+
+        # Away team expected points: league avg + their offense + opponent defense
+        away_points = league_avg_ppg + away_off + home_def
+
+        # Add home field advantage (~2.5 points in NFL)
+        home_points += 2.5
+
+        expected_total = home_points + away_points
+
+        return home_points, away_points, expected_total
 
 
 def calculate_implied_total(

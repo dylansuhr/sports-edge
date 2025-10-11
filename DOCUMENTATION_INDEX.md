@@ -1,6 +1,6 @@
 # SportsEdge - Documentation Index
 
-**Last Updated:** October 8, 2025
+**Last Updated:** October 10, 2025
 
 ---
 
@@ -142,12 +142,14 @@ The following files have been **removed** to reduce clutter (content merged into
 | Understand architecture | `CLAUDE.md` | Architecture Principles |
 | Fix "No signals generated" | `claude/ROADMAP.md` | Troubleshooting Guide |
 | Add new sport | `CLAUDE.md` | Common Tasks → Adding a New Sport |
+| Review recent enhancements | `claude/ROADMAP.md` | Recent Enhancements (Oct 10, 2025) |
 | Plan Phase 1 work | `claude/ROADMAP.md` | Phase 1: Model Refinement |
 | Check legal compliance | `COMPLIANCE.md` | Entire document |
 | Review code quality | `claude/CODEBASE_ANALYSIS.md` | Code Quality Assessment |
 | Optimize performance | `claude/CODEBASE_ANALYSIS.md` | Performance Analysis |
 | Understand data flow | `claude/ROADMAP.md` | Architecture Deep Dive → Data Flow |
 | Configure environment | `claude/ROADMAP.md` | Configuration Reference |
+| Generate CLV reports | `CLAUDE.md` | Essential Commands → make clv-report |
 
 ---
 
@@ -171,13 +173,14 @@ The following files have been **removed** to reduce clutter (content merged into
 
 ## 🎯 Current Status Summary
 
-**System:** Production-ready baseline (875 active signals)
+**System:** Production-ready with Phase 1 enhancements (105,676 total signals)
 **Documentation:** ✅ Complete and consolidated
 **Code Quality:** ✅ Clean, modular, minimal technical debt
-**Next Phase:** Phase 1 enhancements (vig removal, team-specific models, weather/injury)
+**Recent Enhancements:** ✅ Vig removal, ✅ CLV tracking, ✅ Team-specific total models (code)
+**Next Phase:** Integration of team models, market efficiency filters, line shopping
 
 ---
 
-**Document Version:** 1.0
-**Last Updated:** October 8, 2025
+**Document Version:** 1.1
+**Last Updated:** October 10, 2025
 **Maintained by:** Dylan Suhr

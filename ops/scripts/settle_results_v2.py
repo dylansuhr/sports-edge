@@ -23,6 +23,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'packages
 from providers.results import fetch_results
 from shared.shared.db import get_db
 from shared.shared.odds_math import calculate_clv, profit_from_bet
+from models.models.features import NFLFeatureGenerator
 
 # Load environment
 load_dotenv()
@@ -109,6 +110,7 @@ class SettlementProcessor:
 
     def __init__(self):
         self.db = get_db()
+        self.feature_gen = NFLFeatureGenerator()  # Used for offensive/defensive ratings
 
     def find_game_by_teams_and_date(
         self,
@@ -386,6 +388,21 @@ class SettlementProcessor:
         self.db.upsert_elo_history(game_id, home_team_id, home_elo, new_home_elo)
         self.db.upsert_elo_history(game_id, away_team_id, away_elo, new_away_elo)
 
+        # Update offensive/defensive ratings
+        # Get current opponent ratings (or 0 if not yet set)
+        home_def_rating = self.feature_gen.defensive_ratings.get(home_team_id, 0.0)
+        away_def_rating = self.feature_gen.defensive_ratings.get(away_team_id, 0.0)
+        home_off_rating = self.feature_gen.offensive_ratings.get(home_team_id, 0.0)
+        away_off_rating = self.feature_gen.offensive_ratings.get(away_team_id, 0.0)
+
+        # Update offensive ratings (points scored, adjusted for opponent defense)
+        self.feature_gen.update_offensive_rating(home_team_id, home_score, away_def_rating)
+        self.feature_gen.update_offensive_rating(away_team_id, away_score, home_def_rating)
+
+        # Update defensive ratings (points allowed, adjusted for opponent offense)
+        self.feature_gen.update_defensive_rating(home_team_id, away_score, away_off_rating)
+        self.feature_gen.update_defensive_rating(away_team_id, home_score, home_off_rating)
+
         # Log changes
         home_delta = new_home_elo - home_elo
         away_delta = new_away_elo - away_elo
@@ -393,6 +410,12 @@ class SettlementProcessor:
         print(f"    📊 ELO Updates:")
         print(f"       Home: {home_elo:.1f} → {new_home_elo:.1f} ({home_delta:+.1f})")
         print(f"       Away: {away_elo:.1f} → {new_away_elo:.1f} ({away_delta:+.1f})")
+        print(f"    🎯 Offensive Ratings (PPG above avg):")
+        print(f"       Home: {home_off_rating:+.2f} → {self.feature_gen.offensive_ratings[home_team_id]:+.2f}")
+        print(f"       Away: {away_off_rating:+.2f} → {self.feature_gen.offensive_ratings[away_team_id]:+.2f}")
+        print(f"    🛡️  Defensive Ratings (PPG allowed above avg):")
+        print(f"       Home: {home_def_rating:+.2f} → {self.feature_gen.defensive_ratings[home_team_id]:+.2f}")
+        print(f"       Away: {away_def_rating:+.2f} → {self.feature_gen.defensive_ratings[away_team_id]:+.2f}")
 
     def process_results_for_league(
         self,

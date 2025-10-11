@@ -1,4 +1,5 @@
 import './globals.css';
+import Navigation from '@/components/Navigation';
 
 export const metadata = { title: process.env.NEXT_PUBLIC_APP_NAME || 'SportsEdge' };
 
@@ -11,6 +12,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
       </head>
       <body>
+        <Navigation />
         {children}
       </body>
     </html>

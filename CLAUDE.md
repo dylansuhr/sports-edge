@@ -1,7 +1,7 @@
 # SportsEdge - Project Context for Claude Code
 
-**Last Updated:** October 8, 2025
-**Status:** Production-Ready with Automation (1120 Active Signals)
+**Last Updated:** October 10, 2025
+**Status:** Production-Ready with Autonomous Learning System (Self-optimizing ✅)
 
 ---
 
@@ -30,9 +30,11 @@ SportsEdge is an **AI-assisted sports betting research platform** for analyzing 
 ```bash
 # Daily operations (with venv activated)
 make etl         # Fetch latest odds (NFL, NBA, NHL)
-make signals     # Generate betting signals (14-day window)
+make signals     # Generate betting signals (14-day window, with vig removal)
 make dashboard   # Start dashboard (localhost:3000)
 make settle      # Settle completed games and update ELO
+make clv         # Capture closing lines (run 10-30 min before games)
+make clv-report  # Generate CLV performance report
 
 # Database
 make migrate     # Run migrations
@@ -112,16 +114,26 @@ Odds → ELO Model → Fair Probability → Edge Calculation → Signal (if ≥ 
 **Active Automation:**
 - **Odds ETL:** Every 15 minutes, 7 days/week (NFL, NBA, NHL)
 - **Signal Generation:** Every 20 minutes, 7 days/week (all sports)
-- **Settlement:** Daily at 2 AM ET (settles bets, updates ELO)
+- **Settlement:** Daily at 2 AM ET (settles bets, updates ELO + team ratings)
+- **CLV Capture:** Every 30 minutes (closing lines before games start)
+- **Performance Analysis:** Sundays 9 AM ET (weekly analysis + auto-tuning recommendations)
 
 **Configuration:** Workflows in `.github/workflows/` use GitHub Secrets for credentials
 
 ### 7. Dashboard UI
 
-- **Framework:** Next.js 14 with CSS Modules
-- **Features:** Sortable table, sport tabs (ALL, NFL, NBA, NHL), live automation status
-- **Automation Status Component:** Real-time countdown timers for next ETL/signal/settlement run
-- **Styling:** Dark theme with terminal aesthetic, monospace fonts, color-coded signals
+- **Framework:** Next.js 14 with CSS Modules, Recharts for visualization
+- **Pages:**
+  - `/signals` - Sortable signal table with sport tabs, automation status timers
+  - `/performance` - Model performance dashboard with line charts and readiness indicator
+  - `/bets` - Manual bet tracking (placeholder)
+- **Features:**
+  - Model Readiness Card: Visual status (Ready/Monitor/Not Ready/Insufficient Data)
+  - CLV Trend Chart: 30-day performance history
+  - Beat Closing % Chart: Track market-beating percentage
+  - Performance by Sport/Market: Bar charts showing segment-level CLV
+  - Navigation bar with active page highlighting
+- **Styling:** Dark theme with terminal aesthetic, monospace fonts, color-coded signals/charts
 
 ---
 
@@ -202,18 +214,22 @@ claude/ROADMAP.md            # Detailed roadmap, current status, next steps
 ### ✅ What's Working (100% Operational)
 
 1. **Multi-Sport ETL** - NFL, NBA, NHL odds from The Odds API
-2. **Per-Selection Fair Probabilities** - Fixed edge inflation (40% → 11%)
-3. **Signal Generation** - 875 active signals (834 NFL, 19 NBA, 22 NHL)
-4. **Sport-Specific Expiry** - Risk-aware signal lifetimes
-5. **Dashboard** - Live at localhost:3000/signals
-6. **ELO System** - Dynamic ratings that update on settlement
+2. **Per-Selection Fair Probabilities** - Each selection gets accurate probability
+3. **Vig Removal** - Multiplicative devigging (1.26% avg reduction)
+4. **Team-Specific Totals** - Exponential moving average offensive/defensive ratings
+5. **Signal Generation** - 800+ active signals with early-season filters
+6. **Sport-Specific Expiry** - Risk-aware signal lifetimes
+7. **CLV Tracking** - Closing line capture + performance analysis
+8. **Autonomous Learning** - Self-analyzing, self-tuning model
+9. **Performance Dashboard** - Visual readiness indicator + trend charts
+10. **ELO System** - Dynamic ratings that update on settlement
 
-### ⚠️ Known Issues
+### ⚠️ Model Calibration Period
 
-1. **High edges (11% avg)** - Expected until ELOs diverge (need 50+ settled games)
-2. **NBA signals sparse** - Season starts Oct 21 (only 2 games in window)
-3. **NHL totals skipped** - Many exceed 20% edge cap (need team-specific models)
-4. **No vig removal** - Using raw implied probabilities (Phase 1 enhancement)
+1. **High edges (10-11% avg)** - Expected until ELOs diverge (need 50+ settled games per team)
+2. **Team ratings initializing** - Offensive/defensive ratings improve after each game
+3. **Waiting for CLV data** - Need 100+ settled signals for reliable readiness indicator
+4. **Do not bet yet** - Let model learn autonomously until performance dashboard shows "Ready"
 
 ---
 

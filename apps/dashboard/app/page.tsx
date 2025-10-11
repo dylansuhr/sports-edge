@@ -6,95 +6,162 @@ export default async function Home() {
   const stats = await getRecentStats();
 
   return (
-    <main style={{ padding: '2rem', fontFamily: 'system-ui, sans-serif' }}>
-      <h1 style={{ fontSize: 32, marginBottom: 8, fontWeight: 600 }}>sports-edge</h1>
-      <p style={{ color: '#666', marginBottom: '2rem' }}>
-        Read-only dashboard for signals, bets, CLV/ROI, and promos.
+    <main style={{ padding: '24px', maxWidth: '1400px', margin: '0 auto' }}>
+      <h1 style={{
+        fontFamily: 'var(--font-mono)',
+        fontSize: '32px',
+        marginBottom: '8px',
+        letterSpacing: '0.05em'
+      }}>
+        SPORTSEDGE DASHBOARD
+      </h1>
+      <p style={{
+        color: 'var(--foreground-muted)',
+        marginBottom: '32px',
+        fontSize: '16px'
+      }}>
+        Autonomous sports betting research platform - signals only, human-in-the-loop decision making
       </p>
 
       {/* KPI Cards */}
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-        gap: '1.5rem',
-        marginBottom: '3rem'
+        gap: '16px',
+        marginBottom: '32px'
       }}>
         {/* Open Signals */}
         <div style={{
-          padding: '1.5rem',
-          border: '1px solid #e5e7eb',
+          padding: '20px',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
           borderRadius: '8px',
-          backgroundColor: '#fff'
+          background: 'rgba(0, 0, 0, 0.3)',
+          backdropFilter: 'blur(10px)'
         }}>
-          <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.5rem' }}>
+          <div style={{
+            fontSize: '12px',
+            color: 'var(--foreground-muted)',
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+            marginBottom: '8px'
+          }}>
             Open Signals
           </div>
-          <div style={{ fontSize: '2rem', fontWeight: 600, color: '#111827' }}>
+          <div style={{
+            fontFamily: 'var(--font-mono)',
+            fontSize: '32px',
+            fontWeight: 700,
+            color: 'var(--accent)'
+          }}>
             {kpis.openSignalsCount}
           </div>
-          <div style={{ fontSize: '0.75rem', color: '#9ca3af', marginTop: '0.5rem' }}>
+          <div style={{
+            fontSize: '12px',
+            color: 'var(--foreground-muted)',
+            marginTop: '8px'
+          }}>
             Active betting opportunities
           </div>
         </div>
 
         {/* Average Edge */}
         <div style={{
-          padding: '1.5rem',
-          border: '1px solid #e5e7eb',
+          padding: '20px',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
           borderRadius: '8px',
-          backgroundColor: '#fff'
+          background: 'rgba(0, 0, 0, 0.3)',
+          backdropFilter: 'blur(10px)'
         }}>
-          <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.5rem' }}>
+          <div style={{
+            fontSize: '12px',
+            color: 'var(--foreground-muted)',
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+            marginBottom: '8px'
+          }}>
             Avg Edge
           </div>
-          <div style={{ fontSize: '2rem', fontWeight: 600, color: '#22c55e' }}>
+          <div style={{
+            fontFamily: 'var(--font-mono)',
+            fontSize: '32px',
+            fontWeight: 700,
+            color: '#22c55e'
+          }}>
             {kpis.avgEdgePercent.toFixed(2)}%
           </div>
-          <div style={{ fontSize: '0.75rem', color: '#9ca3af', marginTop: '0.5rem' }}>
+          <div style={{
+            fontSize: '12px',
+            color: 'var(--foreground-muted)',
+            marginTop: '8px'
+          }}>
             Current active signals
           </div>
         </div>
 
         {/* 7-Day CLV */}
         <div style={{
-          padding: '1.5rem',
-          border: '1px solid #e5e7eb',
+          padding: '20px',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
           borderRadius: '8px',
-          backgroundColor: '#fff'
+          background: 'rgba(0, 0, 0, 0.3)',
+          backdropFilter: 'blur(10px)'
         }}>
-          <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.5rem' }}>
+          <div style={{
+            fontSize: '12px',
+            color: 'var(--foreground-muted)',
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+            marginBottom: '8px'
+          }}>
             7-Day CLV
           </div>
           <div style={{
-            fontSize: '2rem',
-            fontWeight: 600,
+            fontFamily: 'var(--font-mono)',
+            fontSize: '32px',
+            fontWeight: 700,
             color: kpis.clvLast7Days >= 0 ? '#22c55e' : '#ef4444'
           }}>
             {kpis.clvLast7Days >= 0 ? '+' : ''}{kpis.clvLast7Days.toFixed(2)}%
           </div>
-          <div style={{ fontSize: '0.75rem', color: '#9ca3af', marginTop: '0.5rem' }}>
+          <div style={{
+            fontSize: '12px',
+            color: 'var(--foreground-muted)',
+            marginTop: '8px'
+          }}>
             Closing line value
           </div>
         </div>
 
         {/* Lifetime ROI */}
         <div style={{
-          padding: '1.5rem',
-          border: '1px solid #e5e7eb',
+          padding: '20px',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
           borderRadius: '8px',
-          backgroundColor: '#fff'
+          background: 'rgba(0, 0, 0, 0.3)',
+          backdropFilter: 'blur(10px)'
         }}>
-          <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.5rem' }}>
+          <div style={{
+            fontSize: '12px',
+            color: 'var(--foreground-muted)',
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+            marginBottom: '8px'
+          }}>
             Lifetime ROI
           </div>
           <div style={{
-            fontSize: '2rem',
-            fontWeight: 600,
+            fontFamily: 'var(--font-mono)',
+            fontSize: '32px',
+            fontWeight: 700,
             color: kpis.lifetimeROI >= 0 ? '#22c55e' : '#ef4444'
           }}>
             {kpis.lifetimeROI >= 0 ? '+' : ''}{kpis.lifetimeROI.toFixed(2)}%
           </div>
-          <div style={{ fontSize: '0.75rem', color: '#9ca3af', marginTop: '0.5rem' }}>
+          <div style={{
+            fontSize: '12px',
+            color: 'var(--foreground-muted)',
+            marginTop: '8px'
+          }}>
             All-time return on investment
           </div>
         </div>
@@ -102,31 +169,78 @@ export default async function Home() {
 
       {/* Recent Activity */}
       <div style={{
-        padding: '1.5rem',
-        border: '1px solid #e5e7eb',
+        padding: '20px',
+        border: '1px solid rgba(255, 255, 255, 0.1)',
         borderRadius: '8px',
-        backgroundColor: '#fff',
-        marginBottom: '2rem'
+        background: 'rgba(0, 0, 0, 0.3)',
+        backdropFilter: 'blur(10px)',
+        marginBottom: '32px'
       }}>
-        <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1rem' }}>
+        <h2 style={{
+          fontFamily: 'var(--font-mono)',
+          fontSize: '18px',
+          fontWeight: 700,
+          marginBottom: '16px',
+          letterSpacing: '0.05em',
+          textTransform: 'uppercase'
+        }}>
           Last 7 Days
         </h2>
-        <div style={{ display: 'flex', gap: '3rem' }}>
+        <div style={{ display: 'flex', gap: '48px', flexWrap: 'wrap' }}>
           <div>
-            <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>Bets Placed</div>
-            <div style={{ fontSize: '1.5rem', fontWeight: 600, marginTop: '0.25rem' }}>
+            <div style={{
+              fontSize: '12px',
+              color: 'var(--foreground-muted)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em'
+            }}>
+              Bets Placed
+            </div>
+            <div style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: '24px',
+              fontWeight: 600,
+              marginTop: '4px',
+              color: 'var(--accent)'
+            }}>
               {stats.betsPlaced}
             </div>
           </div>
           <div>
-            <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>Bets Settled</div>
-            <div style={{ fontSize: '1.5rem', fontWeight: 600, marginTop: '0.25rem' }}>
+            <div style={{
+              fontSize: '12px',
+              color: 'var(--foreground-muted)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em'
+            }}>
+              Bets Settled
+            </div>
+            <div style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: '24px',
+              fontWeight: 600,
+              marginTop: '4px',
+              color: 'var(--accent)'
+            }}>
               {stats.betsSettled}
             </div>
           </div>
           <div>
-            <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>Win Rate</div>
-            <div style={{ fontSize: '1.5rem', fontWeight: 600, marginTop: '0.25rem' }}>
+            <div style={{
+              fontSize: '12px',
+              color: 'var(--foreground-muted)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em'
+            }}>
+              Win Rate
+            </div>
+            <div style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: '24px',
+              fontWeight: 600,
+              marginTop: '4px',
+              color: 'var(--accent)'
+            }}>
               {stats.winRate}%
             </div>
           </div>
@@ -137,55 +251,61 @@ export default async function Home() {
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-        gap: '1rem'
+        gap: '16px'
       }}>
         <Link href="/signals" style={{
-          padding: '1.5rem',
-          border: '1px solid #e5e7eb',
+          padding: '20px',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
           borderRadius: '8px',
-          backgroundColor: '#fff',
+          background: 'rgba(0, 0, 0, 0.3)',
+          backdropFilter: 'blur(10px)',
           textDecoration: 'none',
-          color: '#111827',
+          color: 'var(--foreground)',
+          fontFamily: 'var(--font-mono)',
           fontWeight: 500,
-          transition: 'border-color 0.2s',
+          fontSize: '14px',
+          textTransform: 'uppercase',
+          letterSpacing: '0.05em',
+          transition: 'all 0.2s',
+          cursor: 'pointer'
         }}>
           📊 Signals
         </Link>
+        <Link href="/performance" style={{
+          padding: '20px',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          borderRadius: '8px',
+          background: 'rgba(0, 0, 0, 0.3)',
+          backdropFilter: 'blur(10px)',
+          textDecoration: 'none',
+          color: 'var(--foreground)',
+          fontFamily: 'var(--font-mono)',
+          fontWeight: 500,
+          fontSize: '14px',
+          textTransform: 'uppercase',
+          letterSpacing: '0.05em',
+          transition: 'all 0.2s',
+          cursor: 'pointer'
+        }}>
+          📈 Performance
+        </Link>
         <Link href="/bets" style={{
-          padding: '1.5rem',
-          border: '1px solid #e5e7eb',
+          padding: '20px',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
           borderRadius: '8px',
-          backgroundColor: '#fff',
+          background: 'rgba(0, 0, 0, 0.3)',
+          backdropFilter: 'blur(10px)',
           textDecoration: 'none',
-          color: '#111827',
+          color: 'var(--foreground)',
+          fontFamily: 'var(--font-mono)',
           fontWeight: 500,
-          transition: 'border-color 0.2s',
+          fontSize: '14px',
+          textTransform: 'uppercase',
+          letterSpacing: '0.05em',
+          transition: 'all 0.2s',
+          cursor: 'pointer'
         }}>
-          💰 Bets
-        </Link>
-        <Link href="/promos" style={{
-          padding: '1.5rem',
-          border: '1px solid #e5e7eb',
-          borderRadius: '8px',
-          backgroundColor: '#fff',
-          textDecoration: 'none',
-          color: '#111827',
-          fontWeight: 500,
-          transition: 'border-color 0.2s',
-        }}>
-          🎁 Promos
-        </Link>
-        <Link href="/reports" style={{
-          padding: '1.5rem',
-          border: '1px solid #e5e7eb',
-          borderRadius: '8px',
-          backgroundColor: '#fff',
-          textDecoration: 'none',
-          color: '#111827',
-          fontWeight: 500,
-          transition: 'border-color 0.2s',
-        }}>
-          📈 Reports
+          💰 My Bets
         </Link>
       </div>
     </main>

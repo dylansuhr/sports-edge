@@ -6,8 +6,8 @@ import AutomationStatus from '@/components/AutomationStatus';
 interface Signal {
   id: number;
   league?: string;
-  home_team: string;
-  away_team: string;
+  home_team?: string;
+  away_team?: string;
   player_name?: string;
   game_time?: string;
   market_name: string;

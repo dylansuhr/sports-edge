@@ -250,7 +250,8 @@ class Database:
         model_version: str,
         expires_at: str,
         line_value: float = None,
-        player_id: int = None
+        player_id: int = None,
+        raw_implied_probability: float = None
     ) -> int:
         """Insert a betting signal."""
         def _insert():
@@ -260,16 +261,16 @@ class Database:
                         INSERT INTO signals (
                             game_id, player_id, market_id, sportsbook,
                             line_value, odds_american, fair_probability,
-                            implied_probability, edge_percent, kelly_fraction,
+                            implied_probability, raw_implied_probability, edge_percent, kelly_fraction,
                             recommended_stake_pct, confidence_level,
                             model_version, expires_at
                         )
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                         RETURNING id
                     """, (
                         game_id, player_id, market_id, sportsbook,
                         line_value, odds_american, fair_probability,
-                        implied_probability, edge_percent, kelly_fraction,
+                        implied_probability, raw_implied_probability, edge_percent, kelly_fraction,
                         recommended_stake_pct, confidence_level,
                         model_version, expires_at
                     ))
