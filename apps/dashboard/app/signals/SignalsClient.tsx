@@ -31,12 +31,13 @@ interface SignalsClientProps {
   };
   total: number;
   pages: number;
+  sportCounts: { nfl: number, nba: number, nhl: number };
 }
 
 type SortField = 'time' | 'matchup' | 'market' | 'selection' | 'line' | 'odds' | 'fair_probability' | 'edge' | 'stake' | 'sportsbook' | 'confidence';
 type SortDirection = 'asc' | 'desc';
 
-export default function SignalsClient({ signals, filters, total, pages }: SignalsClientProps) {
+export default function SignalsClient({ signals, filters, total, pages, sportCounts }: SignalsClientProps) {
   const [activeTab, setActiveTab] = useState<'all' | 'nfl' | 'nba' | 'nhl'>('all');
   const [sortField, setSortField] = useState<SortField>('edge');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
@@ -61,9 +62,10 @@ export default function SignalsClient({ signals, filters, total, pages }: Signal
     return `${diffDays}d`;
   };
 
-  const nflCount = signals.filter(s => s.league === 'nfl').length;
-  const nbaCount = signals.filter(s => s.league === 'nba').length;
-  const nhlCount = signals.filter(s => s.league === 'nhl').length;
+  // Use total sport counts from server
+  const nflCount = sportCounts.nfl;
+  const nbaCount = sportCounts.nba;
+  const nhlCount = sportCounts.nhl;
 
   // Filter by tab
   const filteredSignals = signals.filter(s => {
@@ -133,17 +135,9 @@ export default function SignalsClient({ signals, filters, total, pages }: Signal
       {/* Header */}
       <header className="header">
         <div className="header-content">
-          <div className="terminal-dots">
-            <span className="dot red"></span>
-            <span className="dot yellow"></span>
-            <span className="dot green"></span>
-          </div>
           <div className="header-text">
-            <h1>
-              <span className="accent">&gt;</span> SportsEdge
-              <span className="blink">_</span>
-            </h1>
-            <p className="subtitle mono">Active Betting Signals · {signals.length} opportunities detected</p>
+            <h1>ACTIVE BETTING SIGNALS</h1>
+            <p className="subtitle mono">{total.toLocaleString()} opportunities detected</p>
           </div>
         </div>
 
@@ -157,7 +151,7 @@ export default function SignalsClient({ signals, filters, total, pages }: Signal
             onClick={() => setActiveTab('all')}
           >
             <span className="tab-label">ALL</span>
-            <span className="tab-count">{signals.length}</span>
+            <span className="tab-count">{total}</span>
           </button>
           <button
             className={`tab ${activeTab === 'nfl' ? 'active' : ''}`}

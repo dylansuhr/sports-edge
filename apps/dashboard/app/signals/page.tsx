@@ -14,7 +14,7 @@ export default async function SignalsPage({
     limit: 50,
   };
 
-  const { signals, total, pages } = await getActiveSignals(filters);
+  const { signals, total, pages, sportCounts } = await getActiveSignals(filters);
 
-  return <SignalsClient signals={signals} filters={filters} total={total} pages={pages} />;
+  return <SignalsClient signals={signals} filters={filters} total={total} pages={pages} sportCounts={sportCounts} />;
 }

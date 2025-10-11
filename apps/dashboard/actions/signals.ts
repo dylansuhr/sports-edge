@@ -35,7 +35,12 @@ export interface SignalFilters {
   limit?: number;
 }
 
-export async function getActiveSignals(filters?: SignalFilters): Promise<{ signals: Signal[], total: number, pages: number }> {
+export async function getActiveSignals(filters?: SignalFilters): Promise<{
+  signals: Signal[],
+  total: number,
+  pages: number,
+  sportCounts: { nfl: number, nba: number, nhl: number }
+}> {
   const params: any[] = [];
   let paramIndex = 1;
 
@@ -124,6 +129,24 @@ export async function getActiveSignals(filters?: SignalFilters): Promise<{ signa
   const total = Number(countResult[0]?.total || 0);
   const pages = Math.ceil(total / limit);
 
+  // Get sport counts (always unfiltered)
+  const sportCountSql = `
+    SELECT
+      g.sport,
+      COUNT(*) as count
+    FROM signals s
+    JOIN games g ON s.game_id = g.id
+    WHERE s.status = 'active'
+      AND s.expires_at > NOW()
+    GROUP BY g.sport
+  `;
+  const sportCountResult = await query<{ sport: string, count: number }>(sportCountSql);
+  const sportCounts = {
+    nfl: Number(sportCountResult.find(r => r.sport === 'nfl')?.count || 0),
+    nba: Number(sportCountResult.find(r => r.sport === 'nba')?.count || 0),
+    nhl: Number(sportCountResult.find(r => r.sport === 'nhl')?.count || 0),
+  };
+
   // Add pagination
   sql += `
     ORDER BY s.edge_percent DESC, s.generated_at DESC
@@ -133,7 +156,7 @@ export async function getActiveSignals(filters?: SignalFilters): Promise<{ signa
 
   const signals = await query<Signal>(sql, params);
 
-  return { signals, total, pages };
+  return { signals, total, pages, sportCounts };
 }
 
 export async function getSignalsByEdge(minEdge: number = 3.0): Promise<Signal[]> {
