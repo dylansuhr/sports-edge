@@ -31,11 +31,17 @@ export interface SignalFilters {
   league?: string;
   market?: string;
   minEdge?: number;
+  page?: number;
+  limit?: number;
 }
 
-export async function getActiveSignals(filters?: SignalFilters): Promise<Signal[]> {
+export async function getActiveSignals(filters?: SignalFilters): Promise<{ signals: Signal[], total: number, pages: number }> {
   const params: any[] = [];
   let paramIndex = 1;
+
+  const page = filters?.page || 1;
+  const limit = filters?.limit || 50;
+  const offset = (page - 1) * limit;
 
   let sql = `
     SELECT
@@ -102,12 +108,32 @@ export async function getActiveSignals(filters?: SignalFilters): Promise<Signal[
     paramIndex++;
   }
 
-  sql += `
-    ORDER BY s.edge_percent DESC, s.generated_at DESC
-    LIMIT 500
+  // Count total for pagination
+  const countSql = `
+    SELECT COUNT(*) as total
+    FROM signals s
+    JOIN games g ON s.game_id = g.id
+    WHERE s.status = 'active'
+      AND s.expires_at > NOW()
+      ${filters?.league && filters.league !== 'all' ? `AND g.sport = $${paramIndex}` : ''}
+      ${filters?.market && filters.market !== 'all' ? `AND EXISTS (SELECT 1 FROM markets m WHERE m.id = s.market_id AND m.name = $${paramIndex + (filters?.league && filters.league !== 'all' ? 1 : 0)})` : ''}
+      ${filters?.minEdge ? `AND s.edge_percent >= $${paramIndex + (filters?.league && filters.league !== 'all' ? 1 : 0) + (filters?.market && filters.market !== 'all' ? 1 : 0)}` : ''}
   `;
 
-  return await query<Signal>(sql, params);
+  const countResult = await query<{ total: number }>(countSql, params);
+  const total = Number(countResult[0]?.total || 0);
+  const pages = Math.ceil(total / limit);
+
+  // Add pagination
+  sql += `
+    ORDER BY s.edge_percent DESC, s.generated_at DESC
+    LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
+  `;
+  params.push(limit, offset);
+
+  const signals = await query<Signal>(sql, params);
+
+  return { signals, total, pages };
 }
 
 export async function getSignalsByEdge(minEdge: number = 3.0): Promise<Signal[]> {

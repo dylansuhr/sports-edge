@@ -4,15 +4,17 @@ import SignalsClient from './SignalsClient';
 export default async function SignalsPage({
   searchParams,
 }: {
-  searchParams: { league?: string; market?: string; minEdge?: string };
+  searchParams: { league?: string; market?: string; minEdge?: string; page?: string };
 }) {
   const filters = {
     league: searchParams.league,
     market: searchParams.market,
     minEdge: searchParams.minEdge ? parseFloat(searchParams.minEdge) : undefined,
+    page: searchParams.page ? parseInt(searchParams.page) : 1,
+    limit: 50,
   };
 
-  const signals = await getActiveSignals(filters);
+  const { signals, total, pages } = await getActiveSignals(filters);
 
-  return <SignalsClient signals={signals} filters={filters} />;
+  return <SignalsClient signals={signals} filters={filters} total={total} pages={pages} />;
 }

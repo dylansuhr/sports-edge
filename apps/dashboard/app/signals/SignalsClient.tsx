@@ -27,13 +27,16 @@ interface SignalsClientProps {
     league?: string;
     market?: string;
     minEdge?: number;
+    page?: number;
   };
+  total: number;
+  pages: number;
 }
 
 type SortField = 'time' | 'matchup' | 'market' | 'selection' | 'line' | 'odds' | 'fair_probability' | 'edge' | 'stake' | 'sportsbook' | 'confidence';
 type SortDirection = 'asc' | 'desc';
 
-export default function SignalsClient({ signals, filters }: SignalsClientProps) {
+export default function SignalsClient({ signals, filters, total, pages }: SignalsClientProps) {
   const [activeTab, setActiveTab] = useState<'all' | 'nfl' | 'nba' | 'nhl'>('all');
   const [sortField, setSortField] = useState<SortField>('edge');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
@@ -296,6 +299,41 @@ export default function SignalsClient({ signals, filters }: SignalsClientProps) 
               })}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* Pagination */}
+      {pages > 1 && (
+        <div className="pagination">
+          <div className="pagination-info">
+            Showing {((filters.page || 1) - 1) * 50 + 1}-{Math.min((filters.page || 1) * 50, total)} of {total} signals
+          </div>
+          <div className="pagination-buttons">
+            {filters.page && filters.page > 1 && (
+              <a href={`/signals?page=${filters.page - 1}${filters.league && filters.league !== 'all' ? `&league=${filters.league}` : ''}`} className="pagination-button">
+                ← Previous
+              </a>
+            )}
+            {Array.from({ length: Math.min(pages, 10) }, (_, i) => {
+              const pageNum = i + 1;
+              const isActive = (filters.page || 1) === pageNum;
+              return (
+                <a
+                  key={pageNum}
+                  href={`/signals?page=${pageNum}${filters.league && filters.league !== 'all' ? `&league=${filters.league}` : ''}`}
+                  className={`pagination-button ${isActive ? 'active' : ''}`}
+                >
+                  {pageNum}
+                </a>
+              );
+            })}
+            {pages > 10 && <span className="pagination-ellipsis">...</span>}
+            {(filters.page || 1) < pages && (
+              <a href={`/signals?page=${(filters.page || 1) + 1}${filters.league && filters.league !== 'all' ? `&league=${filters.league}` : ''}`} className="pagination-button">
+                Next →
+              </a>
+            )}
+          </div>
         </div>
       )}
 
@@ -566,6 +604,59 @@ export default function SignalsClient({ signals, filters }: SignalsClientProps) 
 
         .terminal-output p {
           margin: 0.5rem 0;
+        }
+
+        /* Pagination */
+        .pagination {
+          margin-top: 2rem;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 1.5rem;
+          background: rgba(0, 0, 0, 0.3);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 8px;
+        }
+
+        .pagination-info {
+          font-family: var(--font-mono);
+          font-size: 14px;
+          color: var(--foreground-muted);
+        }
+
+        .pagination-buttons {
+          display: flex;
+          gap: 0.5rem;
+          align-items: center;
+        }
+
+        .pagination-button {
+          padding: 0.5rem 1rem;
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 4px;
+          color: var(--foreground);
+          text-decoration: none;
+          font-family: var(--font-mono);
+          font-size: 13px;
+          transition: all 0.2s;
+          cursor: pointer;
+        }
+
+        .pagination-button:hover {
+          background: rgba(255, 255, 255, 0.1);
+          border-color: var(--accent);
+        }
+
+        .pagination-button.active {
+          background: var(--accent);
+          color: var(--background);
+          border-color: var(--accent);
+        }
+
+        .pagination-ellipsis {
+          color: var(--foreground-muted);
+          padding: 0 0.5rem;
         }
 
         /* Responsive */
