@@ -94,10 +94,7 @@ export default function AutomationStatus() {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <span className={`${styles.dot} ${styles.dotRed}`}></span>
-        <span className={`${styles.dot} ${styles.dotYellow}`}></span>
-        <span className={`${styles.dot} ${styles.dotGreen}`}></span>
-        <span className={styles.terminalPrompt}>~/automation</span>
+        <span className={styles.terminalPrompt}>AUTOMATION STATUS</span>
       </div>
 
       <div className={styles.grid}>
