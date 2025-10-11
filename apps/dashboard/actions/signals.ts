@@ -104,6 +104,7 @@ export async function getActiveSignals(filters?: SignalFilters): Promise<Signal[
 
   sql += `
     ORDER BY s.edge_percent DESC, s.generated_at DESC
+    LIMIT 500
   `;
 
   return await query<Signal>(sql, params);
