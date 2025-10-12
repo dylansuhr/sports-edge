@@ -88,8 +88,26 @@ export async function getPaperBankroll(): Promise<PaperBankroll | null> {
     LIMIT 1
   `;
 
-  const result = await query<PaperBankroll>(sql);
-  return result[0] || null;
+  const result = await query<any>(sql);
+  const row = result[0];
+
+  if (!row) return null;
+
+  return {
+    balance: Number(row.balance),
+    starting_balance: Number(row.starting_balance),
+    total_bets: Number(row.total_bets),
+    total_staked: Number(row.total_staked),
+    total_profit_loss: Number(row.total_profit_loss),
+    roi_percent: Number(row.roi_percent),
+    win_count: Number(row.win_count),
+    loss_count: Number(row.loss_count),
+    push_count: Number(row.push_count),
+    win_rate: Number(row.win_rate),
+    avg_edge: row.avg_edge ? Number(row.avg_edge) : undefined,
+    avg_clv: row.avg_clv ? Number(row.avg_clv) : undefined,
+    updated_at: row.updated_at,
+  };
 }
 
 export async function getRecentPaperBets(limit: number = 50): Promise<PaperBet[]> {
@@ -108,7 +126,18 @@ export async function getRecentPaperBets(limit: number = 50): Promise<PaperBet[]
     LIMIT $1
   `;
 
-  return await query<PaperBet>(sql, [limit]);
+  const rows = await query<any>(sql, [limit]);
+  return rows.map(row => ({
+    ...row,
+    id: Number(row.id),
+    signal_id: Number(row.signal_id),
+    stake: Number(row.stake),
+    odds_american: Number(row.odds_american),
+    odds_decimal: Number(row.odds_decimal),
+    profit_loss: row.profit_loss ? Number(row.profit_loss) : undefined,
+    game_id: Number(row.game_id),
+    edge_percent: Number(row.edge_percent),
+  }));
 }
 
 export async function getRecentDecisions(limit: number = 50): Promise<PaperBetDecision[]> {
@@ -138,7 +167,18 @@ export async function getRecentDecisions(limit: number = 50): Promise<PaperBetDe
     LIMIT $1
   `;
 
-  return await query<PaperBetDecision>(sql, [limit]);
+  const rows = await query<any>(sql, [limit]);
+  return rows.map(row => ({
+    ...row,
+    id: Number(row.id),
+    signal_id: Number(row.signal_id),
+    confidence_score: Number(row.confidence_score),
+    kelly_stake: row.kelly_stake ? Number(row.kelly_stake) : undefined,
+    actual_stake: row.actual_stake ? Number(row.actual_stake) : undefined,
+    edge_percent: Number(row.edge_percent),
+    bankroll_at_decision: Number(row.bankroll_at_decision),
+    exposure_pct: Number(row.exposure_pct),
+  }));
 }
 
 export async function getDailyPerformance(days: number = 30): Promise<DailyPerformance[]> {
@@ -176,7 +216,15 @@ export async function getDailyPerformance(days: number = 30): Promise<DailyPerfo
     ORDER BY date ASC
   `;
 
-  return await query<DailyPerformance>(sql);
+  const rows = await query<any>(sql);
+  return rows.map(row => ({
+    date: row.date,
+    bets: Number(row.bets),
+    profit_loss: Number(row.profit_loss),
+    cumulative_pl: Number(row.cumulative_pl),
+    roi: Number(row.roi),
+    win_rate: Number(row.win_rate),
+  }));
 }
 
 export async function getMarketPerformance(): Promise<MarketPerformance[]> {
@@ -206,7 +254,17 @@ export async function getMarketPerformance(): Promise<MarketPerformance[]> {
     ORDER BY total_pl DESC
   `;
 
-  return await query<MarketPerformance>(sql);
+  const rows = await query<any>(sql);
+  return rows.map(row => ({
+    market_name: row.market_name,
+    bets: Number(row.bets),
+    wins: Number(row.wins),
+    losses: Number(row.losses),
+    win_rate: Number(row.win_rate),
+    total_pl: Number(row.total_pl),
+    avg_edge: Number(row.avg_edge),
+    roi: Number(row.roi),
+  }));
 }
 
 export async function getPaperBettingStats(): Promise<{
@@ -271,17 +329,22 @@ export async function getPaperBettingStats(): Promise<{
     CROSS JOIN top_market tm
   `;
 
-  const result = await query<{
-    total_value: number;
-    avg_confidence: number;
-    top_market: string;
-    recent_streak: string;
-  }>(sql);
+  const result = await query<any>(sql);
+  const row = result[0];
 
-  return result[0] || {
-    total_value: 0,
-    avg_confidence: 0,
-    top_market: 'N/A',
-    recent_streak: ''
+  if (!row) {
+    return {
+      total_value: 0,
+      avg_confidence: 0,
+      top_market: 'N/A',
+      recent_streak: ''
+    };
+  }
+
+  return {
+    total_value: Number(row.total_value || 0),
+    avg_confidence: Number(row.avg_confidence || 0),
+    top_market: row.top_market || 'N/A',
+    recent_streak: row.recent_streak || ''
   };
 }
