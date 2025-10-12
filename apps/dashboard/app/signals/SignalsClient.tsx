@@ -192,7 +192,7 @@ export default function SignalsClient({ signals, filters, total, pages, sportCou
             <thead>
               <tr>
                 <th className="sortable" onClick={() => handleSort('time')}>
-                  Time
+                  Game Time
                   {sortField === 'time' && (
                     <span className="sort-indicator">{sortDirection === 'asc' ? '↑' : '↓'}</span>
                   )}
