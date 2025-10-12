@@ -1,25 +1,32 @@
 # SportsEdge - Project Context for Claude Code
 
-**Last Updated:** October 10, 2025
-**Status:** Production-Ready with Autonomous Learning System (Self-optimizing ✅)
+**Last Updated:** October 11, 2025
+**Status:** Production-Ready with Paper Betting System (AI-Powered Mock Betting ✅)
 
 ---
 
 ## Project Overview
 
-SportsEdge is an **AI-assisted sports betting research platform** for analyzing betting opportunities with human-in-the-loop decision making. **No automated bet placement** - this is a signals-only system for responsible betting research.
+SportsEdge is an **AI-assisted sports betting research platform** with autonomous paper betting validation. The system includes:
+1. **Signal Generation** - AI analyzes odds and generates betting opportunities
+2. **Paper Betting** - AI autonomously places mock bets with $0 risk to validate the system
+3. **Human-in-the-loop** - Once validated, human reviews signals and places real bets manually
 
-**Key Principle:** Generate signals → Human reviews → Manual bet placement → Track results
+**Key Principle:**
+- **Phase 1 (Current):** Generate signals → AI places paper bets → Track performance with zero risk
+- **Phase 2 (When validated):** Generate signals → Human reviews → Manual bet placement → Track results
+
+**No automated real-money betting** - Paper betting is mock-only for system validation.
 
 ---
 
 ## Tech Stack
 
-- **Backend:** Python 3.10+ (ETL, modeling, signal generation)
-- **Frontend:** Next.js 14 (read-only dashboard)
-- **Database:** PostgreSQL (Neon) - 11 tables
+- **Backend:** Python 3.10+ (ETL, modeling, signal generation, paper betting AI)
+- **Frontend:** Next.js 14 (dashboard with paper betting UI)
+- **Database:** PostgreSQL (Neon) - 15 tables (added paper betting tables)
 - **Data Source:** The Odds API (ToS-compliant)
-- **Automation:** Makefile commands, GitHub Actions (active)
+- **Automation:** GitHub Actions (odds ETL, signals, paper betting, settlement)
 
 ---
 
@@ -35,6 +42,10 @@ make dashboard   # Start dashboard (localhost:3000)
 make settle      # Settle completed games and update ELO
 make clv         # Capture closing lines (run 10-30 min before games)
 make clv-report  # Generate CLV performance report
+
+# Paper betting (NEW)
+.venv/bin/python ops/scripts/paper_bet_agent.py --strategy Conservative --max-bets 10
+.venv/bin/python ops/scripts/settle_paper_bets.py
 
 # Database
 make migrate     # Run migrations
@@ -69,7 +80,11 @@ make verify      # Verify system health
 ```
 The Odds API → ETL → Database → Signal Generation → Dashboard
                                         ↓
-                                 Settlement → ELO Updates
+                              AI Paper Betting Agent (autonomous)
+                                        ↓
+                            Paper Bets → Settlement → ELO Updates
+                                        ↓
+                            Performance Feedback → Model Improvement
 ```
 
 **No CSV fallbacks** - If API fails, log error and exit.
@@ -109,29 +124,63 @@ Odds → ELO Model → Fair Probability → Edge Calculation → Signal (if ≥ 
 - Updates after each settlement
 - Tracked in `elo_history` table
 
-### 6. Automated Workflows (GitHub Actions)
+### 6. Paper Betting System (AI-Powered Mock Betting)
+
+**Purpose:** Validate system performance with $0 risk before placing real bets
+
+**How It Works:**
+1. **AI Agent** evaluates signals every 30 minutes using multi-factor decision logic
+2. **Smart Selection** considers edge quality, confidence, bankroll, correlation risk, exposure limits
+3. **Kelly Sizing** uses ¼-Kelly with confidence adjustments (max 1% of bankroll per bet)
+4. **Transparent Logging** every decision (place/skip) recorded with reasoning
+5. **Auto Settlement** paper bets settle when games complete, updating virtual bankroll
+6. **Performance Tracking** ROI, win rate, CLV, market performance metrics
+
+**Decision Factors:**
+- Edge magnitude (3%+ minimum for conservative strategy)
+- Model confidence level (high/medium/low)
+- CLV history for sportsbook/market combination
+- Time until game (closer = more reliable)
+- Market type (moneyline > spread > totals reliability)
+- Correlation risk (avoids multiple bets on same game)
+- Exposure limits (max 3% of bankroll per game, 30% total)
+
+**Database Tables:**
+- `paper_bets` - All AI-placed mock bets with results
+- `paper_bankroll` - Running balance, ROI, win rate, avg CLV
+- `paper_bet_decisions` - Decision log with AI reasoning (placed + skipped)
+- `paper_betting_strategies` - Configurable strategies for A/B testing
+
+**Starting Bankroll:** $10,000 virtual
+**Strategy:** Conservative (3% min edge, medium confidence, ¼-Kelly)
+**Goal:** Positive ROI + positive CLV = system is beating the market
+
+### 7. Automated Workflows (GitHub Actions)
 
 **Active Automation:**
 - **Odds ETL:** Every 15 minutes, 7 days/week (NFL, NBA, NHL)
 - **Signal Generation:** Every 20 minutes, 7 days/week (all sports)
+- **Paper Betting:** Every 30 minutes (AI places mock bets + settles completed) **NEW**
 - **Settlement:** Daily at 2 AM ET (settles bets, updates ELO + team ratings)
 - **CLV Capture:** Every 30 minutes (closing lines before games start)
 - **Performance Analysis:** Sundays 9 AM ET (weekly analysis + auto-tuning recommendations)
 
 **Configuration:** Workflows in `.github/workflows/` use GitHub Secrets for credentials
 
-### 7. Dashboard UI
+### 8. Dashboard UI
 
 - **Framework:** Next.js 14 with CSS Modules, Recharts for visualization
 - **Pages:**
   - `/signals` - Sortable signal table with sport tabs, automation status timers
   - `/performance` - Model performance dashboard with line charts and readiness indicator
-  - `/bets` - Manual bet tracking (placeholder)
+  - `/paper-betting` - **NEW** AI paper betting dashboard with P&L tracking, decision log, performance charts
+  - `/bets` - Manual bet tracking (placeholder for future real-money bets)
 - **Features:**
   - Model Readiness Card: Visual status (Ready/Monitor/Not Ready/Insufficient Data)
   - CLV Trend Chart: 30-day performance history
   - Beat Closing % Chart: Track market-beating percentage
   - Performance by Sport/Market: Bar charts showing segment-level CLV
+  - Paper Betting Dashboard: Real-time bankroll, win rate, ROI, CLV, AI decision transparency
   - Navigation bar with active page highlighting
 - **Styling:** Dark theme with terminal aesthetic, monospace fonts, color-coded signals/charts
 
@@ -161,10 +210,16 @@ packages/
 
 ```
 ops/scripts/
-├── odds_etl_v2.py           # **USE THIS** - API-only ETL
-├── generate_signals_v2.py   # **USE THIS** - Signal generation
-├── settle_results_v2.py     # Bet settlement + ELO updates
-└── verify_setup.py          # System health check
+├── odds_etl_v2.py              # **USE THIS** - API-only ETL
+├── generate_signals_v2.py      # **USE THIS** - Signal generation
+├── settle_results_v2.py        # Bet settlement + ELO updates
+├── paper_bet_agent.py          # **NEW** - AI paper betting agent
+├── settle_paper_bets.py        # **NEW** - Paper bet settlement
+├── auto_analyze_performance.py # Weekly CLV analysis + recommendations
+├── auto_tune_parameters.py     # Autonomous parameter tuning
+├── capture_closing_lines.py    # CLV capture before games
+├── clv_report.py               # CLV reporting
+└── verify_setup.py             # System health check
 ```
 
 ### Dashboard (Frontend)
@@ -175,13 +230,23 @@ apps/dashboard/
 │   ├── signals/
 │   │   ├── page.tsx         # Server component (data fetching)
 │   │   └── SignalsClient.tsx # Client component (sortable table, tabs)
+│   ├── performance/
+│   │   ├── page.tsx         # Performance dashboard server component
+│   │   └── PerformanceCharts.tsx # CLV charts and metrics
+│   ├── paper-betting/       # **NEW**
+│   │   ├── page.tsx         # Paper betting server component
+│   │   ├── PaperBettingClient.tsx # Paper betting UI with tabs
+│   │   └── PaperBetting.module.css # Paper betting styles
 │   ├── globals.css          # Dark theme CSS variables
-│   └── bets/page.tsx        # Bet history (placeholder)
+│   └── bets/page.tsx        # Manual bet tracking (placeholder)
 ├── components/
 │   ├── AutomationStatus.tsx # Live countdown timers for workflows
-│   └── AutomationStatus.module.css # CSS Module styling
+│   ├── Navigation.tsx       # Navigation bar
+│   └── ModelReadinessCard.tsx # Model status indicator
 ├── actions/
-│   └── signals.ts           # Database queries (read-only)
+│   ├── signals.ts           # Signal queries (read-only)
+│   ├── performance.ts       # Performance/CLV queries
+│   └── paper-betting.ts     # **NEW** Paper betting queries
 └── lib/
     └── db.ts                # Read-only connection
 ```
@@ -190,13 +255,20 @@ apps/dashboard/
 
 ```
 infra/migrations/
-├── 0001_init.sql            # Full schema (11 tables)
-└── 0004_add_selection_to_odds.sql  # Selection tracking (critical fix)
+├── 0001_init.sql                    # Full schema (11 base tables)
+├── 0004_add_selection_to_odds.sql   # Selection tracking (critical fix)
+├── 0005_add_raw_implied_prob.sql    # Vig removal support
+├── 0006_add_signal_clv_tracking.sql # CLV tracking
+├── 0007_add_performance_indexes.sql # Performance optimization
+└── 0008_add_paper_betting.sql       # **NEW** Paper betting tables (4 tables)
 
 .github/workflows/
-├── odds_etl.yml             # Automated odds fetching (15 min)
-├── generate_signals.yml     # Automated signal generation (20 min)
-└── settle_results.yml       # Automated settlement (daily 2 AM ET)
+├── odds_etl.yml                # Automated odds fetching (15 min)
+├── generate_signals.yml        # Automated signal generation (20 min)
+├── paper_betting.yml           # **NEW** AI paper betting (30 min)
+├── settle_results.yml          # Automated settlement (daily 2 AM ET)
+├── capture_closing_lines.yml   # CLV capture (30 min)
+└── weekly_performance_analysis.yml # Performance analysis (Sundays 9 AM ET)
 ```
 
 ### Documentation
@@ -223,6 +295,7 @@ claude/ROADMAP.md            # Detailed roadmap, current status, next steps
 8. **Autonomous Learning** - Self-analyzing, self-tuning model
 9. **Performance Dashboard** - Visual readiness indicator + trend charts
 10. **ELO System** - Dynamic ratings that update on settlement
+11. **Paper Betting System** - **NEW** AI autonomously places mock bets with $10,000 virtual bankroll
 
 ### ⚠️ Model Calibration Period
 
@@ -250,7 +323,7 @@ claude/ROADMAP.md            # Detailed roadmap, current status, next steps
 
 ### Compliance
 
-1. **NO automated bet placement code paths**
+1. **NO automated real-money bet placement** - Paper betting is mock-only for validation
 2. Dashboard uses `DATABASE_READONLY_URL` (separate read-only role)
 3. **NEVER log or commit API keys**
 4. Respect The Odds API quota (500 req/month free tier)

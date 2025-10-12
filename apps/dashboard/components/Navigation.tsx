@@ -29,6 +29,12 @@ export default function Navigation() {
             Performance
           </Link>
           <Link
+            href="/paper-betting"
+            className={`${styles.link} ${isActive('/paper-betting') ? styles.active : ''}`}
+          >
+            Paper Betting
+          </Link>
+          <Link
             href="/bets"
             className={`${styles.link} ${isActive('/bets') ? styles.active : ''}`}
           >
