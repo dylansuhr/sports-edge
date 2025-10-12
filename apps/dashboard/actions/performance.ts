@@ -53,7 +53,14 @@ export async function getDailyPerformance(days: number = 30): Promise<Performanc
     ORDER BY date ASC
   `;
 
-  return await query<PerformanceMetrics>(sql);
+  const rows = await query<any>(sql);
+  return rows.map(row => ({
+    date: row.date,
+    avg_clv: Number(row.avg_clv || 0),
+    beat_close_pct: Number(row.beat_close_pct || 0),
+    total_signals: Number(row.total_signals || 0),
+    avg_edge: Number(row.avg_edge || 0),
+  }));
 }
 
 /**
@@ -71,12 +78,18 @@ export async function getModelReadiness(): Promise<ModelReadiness> {
   `;
 
   const result = await query<{
-    total_signals: number;
-    avg_clv: number;
-    beat_close_pct: number;
+    total_signals: any;
+    avg_clv: any;
+    beat_close_pct: any;
   }>(sql);
 
-  const data = result[0];
+  const rawData = result[0];
+  const data = rawData ? {
+    total_signals: Number(rawData.total_signals || 0),
+    avg_clv: Number(rawData.avg_clv || 0),
+    beat_close_pct: Number(rawData.beat_close_pct || 0),
+  } : null;
+
   const MIN_SIGNALS = 100;
 
   // Insufficient data
@@ -145,7 +158,14 @@ export async function getPerformanceBySport(days: number = 14): Promise<SportPer
     ORDER BY avg_clv DESC
   `;
 
-  return await query<SportPerformance>(sql);
+  const rows = await query<any>(sql);
+  return rows.map(row => ({
+    sport: row.sport,
+    signals: Number(row.signals || 0),
+    avg_clv: Number(row.avg_clv || 0),
+    beat_close_pct: Number(row.beat_close_pct || 0),
+    avg_edge: Number(row.avg_edge || 0),
+  }));
 }
 
 /**
@@ -167,7 +187,14 @@ export async function getPerformanceByMarket(days: number = 14): Promise<MarketP
     ORDER BY avg_clv DESC
   `;
 
-  return await query<MarketPerformance>(sql);
+  const rows = await query<any>(sql);
+  return rows.map(row => ({
+    market: row.market,
+    signals: Number(row.signals || 0),
+    avg_clv: Number(row.avg_clv || 0),
+    beat_close_pct: Number(row.beat_close_pct || 0),
+    avg_edge: Number(row.avg_edge || 0),
+  }));
 }
 
 /**
@@ -189,6 +216,19 @@ export async function getOverallPerformance(days: number = 14) {
       AND created_at > NOW() - INTERVAL '${days} days'
   `;
 
-  const result = await query(sql);
-  return result[0] || null;
+  const result = await query<any>(sql);
+  const row = result[0];
+
+  if (!row) return null;
+
+  return {
+    total_signals: Number(row.total_signals || 0),
+    avg_clv: Number(row.avg_clv || 0),
+    stddev_clv: Number(row.stddev_clv || 0),
+    beat_close_pct: Number(row.beat_close_pct || 0),
+    avg_edge: Number(row.avg_edge || 0),
+    p25_clv: Number(row.p25_clv || 0),
+    median_clv: Number(row.median_clv || 0),
+    p75_clv: Number(row.p75_clv || 0),
+  };
 }

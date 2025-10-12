@@ -29,8 +29,8 @@ export async function getDashboardKPIs(): Promise<DashboardKPIs> {
       AND expires_at > NOW()
   `;
 
-  const avgEdgeResult = await query<{ avg_edge: number }>(avgEdgeSql);
-  const avgEdgePercent = avgEdgeResult[0]?.avg_edge || 0;
+  const avgEdgeResult = await query<{ avg_edge: any }>(avgEdgeSql);
+  const avgEdgePercent = Number(avgEdgeResult[0]?.avg_edge || 0);
 
   // CLV last 7 days
   const clvSql = `
@@ -40,8 +40,8 @@ export async function getDashboardKPIs(): Promise<DashboardKPIs> {
       AND clv_percent IS NOT NULL
   `;
 
-  const clvResult = await query<{ avg_clv: number }>(clvSql);
-  const clvLast7Days = clvResult[0]?.avg_clv || 0;
+  const clvResult = await query<{ avg_clv: any }>(clvSql);
+  const clvLast7Days = Number(clvResult[0]?.avg_clv || 0);
 
   // Lifetime ROI
   const roiSql = `
@@ -52,9 +52,9 @@ export async function getDashboardKPIs(): Promise<DashboardKPIs> {
     WHERE settled_at IS NOT NULL
   `;
 
-  const roiResult = await query<{ total_pnl: number; total_staked: number }>(roiSql);
-  const totalPnL = roiResult[0]?.total_pnl || 0;
-  const totalStaked = roiResult[0]?.total_staked || 0;
+  const roiResult = await query<{ total_pnl: any; total_staked: any }>(roiSql);
+  const totalPnL = Number(roiResult[0]?.total_pnl || 0);
+  const totalStaked = Number(roiResult[0]?.total_staked || 0);
   const lifetimeROI = totalStaked > 0 ? (totalPnL / totalStaked) * 100 : 0;
 
   return {
