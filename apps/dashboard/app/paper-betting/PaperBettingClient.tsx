@@ -111,6 +111,8 @@ export default function PaperBettingClient({
         return styles.statusPush;
       case 'pending':
         return styles.statusPending;
+      case 'void':
+        return styles.statusVoid;
       default:
         return '';
     }
@@ -162,14 +164,22 @@ export default function PaperBettingClient({
           </div>
           <div className={styles.metricSubtext}>
             ${bankroll.total_staked.toFixed(2)} staked ·
-            Avg Edge: {bankroll.avg_edge?.toFixed(1) || 'N/A'}%
+            Avg Edge: {bankroll.avg_edge !== null && bankroll.avg_edge !== undefined ? bankroll.avg_edge.toFixed(1) : 'N/A'}%
           </div>
         </div>
 
         <div className={styles.metricCard}>
           <div className={styles.metricLabel}>CLV Performance</div>
-          <div className={`${styles.metricValue} ${bankroll.avg_clv && bankroll.avg_clv > 0 ? styles.positive : styles.negative}`}>
-            {bankroll.avg_clv ? `${bankroll.avg_clv >= 0 ? '+' : ''}${bankroll.avg_clv.toFixed(2)}%` : 'N/A'}
+          <div className={`${styles.metricValue} ${
+            bankroll.avg_clv !== null && bankroll.avg_clv !== undefined && bankroll.avg_clv > 0
+              ? styles.positive
+              : bankroll.avg_clv !== null && bankroll.avg_clv !== undefined && bankroll.avg_clv < 0
+                ? styles.negative
+                : ''
+          }`}>
+            {bankroll.avg_clv !== null && bankroll.avg_clv !== undefined
+              ? `${bankroll.avg_clv >= 0 ? '+' : ''}${bankroll.avg_clv.toFixed(2)}%`
+              : 'N/A'}
           </div>
           <div className={styles.metricSubtext}>
             Closing Line Value · {stats.recent_streak ? `Streak: ${stats.recent_streak}` : 'Building history...'}

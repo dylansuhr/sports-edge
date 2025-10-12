@@ -323,7 +323,16 @@ class SignalGeneratorV2:
         else:  # nhl and others
             hours_before = 36  # Expire 1.5 days before game
 
-        return game_scheduled_at - timedelta(hours=hours_before)
+        candidate = game_scheduled_at - timedelta(hours=hours_before)
+        now_utc = datetime.now(timezone.utc)
+
+        # Never expire signals in the past; keep at least a small buffer before the game.
+        minimum_expiry = now_utc + timedelta(minutes=5)
+        if candidate < minimum_expiry:
+            candidate = minimum_expiry
+
+        # Do not keep signals alive past the scheduled start.
+        return min(candidate, game_scheduled_at)
 
     def calculate_fair_probability(
         self,

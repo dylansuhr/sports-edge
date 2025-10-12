@@ -287,6 +287,12 @@
   border: 1px solid #3b82f6;
 }
 
+.statusVoid {
+  background: rgba(209, 213, 219, 0.2);
+  color: #d1d5db;
+  border: 1px solid #d1d5db;
+}
+
 /* Decision Badges */
 .decisionBadge {
   display: inline-block;

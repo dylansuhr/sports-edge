@@ -14,7 +14,7 @@ Features:
 
 import os
 import sys
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional, Tuple
 import logging
 from dotenv import load_dotenv
@@ -84,7 +84,12 @@ class PaperBettingAgent:
     def _get_pending_bets(self) -> List[Dict]:
         """Get all pending paper bets."""
         sql = """
-            SELECT pb.*, g.sport, g.scheduled_at
+            SELECT
+                pb.*,
+                g.sport,
+                g.scheduled_at,
+                g.home_team_id,
+                g.away_team_id
             FROM paper_bets pb
             JOIN games g ON pb.game_id = g.id
             WHERE pb.status = 'pending'
@@ -195,7 +200,18 @@ class PaperBettingAgent:
 
         # Factor 4: Time to game (0-0.1 score)
         # More time = slightly lower confidence due to line movement risk
-        hours_until_game = (signal['scheduled_at'] - datetime.now()).total_seconds() / 3600
+        game_time = signal['scheduled_at']
+        if isinstance(game_time, datetime):
+            if game_time.tzinfo is None:
+                game_time = game_time.replace(tzinfo=timezone.utc)
+            else:
+                game_time = game_time.astimezone(timezone.utc)
+        now_utc = datetime.now(timezone.utc)
+        if isinstance(game_time, datetime):
+            hours_until_game = (game_time - now_utc).total_seconds() / 3600
+        else:
+            hours_until_game = 0
+        hours_until_game = max(hours_until_game, 0)
         if hours_until_game <= 24:
             score += 0.05  # Last-minute sharp money already in
         elif hours_until_game <= 48:
@@ -229,14 +245,16 @@ class PaperBettingAgent:
 
         result = query(sql, [signal['sportsbook'], signal['market_id']])
 
-        if result and result[0]['avg_clv']:
-            avg_clv = float(result[0]['avg_clv'])
-            if avg_clv > 2.0:
-                return 0.20
-            elif avg_clv > 1.0:
-                return 0.15
-            elif avg_clv > 0:
-                return 0.10
+        if result:
+            avg_clv_value = result[0].get('avg_clv')
+            if avg_clv_value is not None:
+                avg_clv = float(avg_clv_value)
+                if avg_clv > 2.0:
+                    return 0.20
+                if avg_clv > 1.0:
+                    return 0.15
+                if avg_clv > 0:
+                    return 0.10
 
         return 0.05  # Neutral if no history
 
@@ -336,7 +354,7 @@ class PaperBettingAgent:
         if self.strategy.get('max_daily_bets'):
             today_bets = sum(
                 1 for bet in self.pending_bets
-                if bet['placed_at'].date() == datetime.now().date()
+                if bet['placed_at'].date() == datetime.now(timezone.utc).date()
             )
 
             if today_bets >= self.strategy['max_daily_bets']:
@@ -370,7 +388,7 @@ class PaperBettingAgent:
         kelly_stake, actual_stake = self.calculate_stake(signal, confidence_score)
 
         if actual_stake < 1.0:
-            reasoning = f"SKIP: Calculated stake (${actual_stake:.2f}) below %s minimum"
+            reasoning = f"SKIP: Calculated stake (${actual_stake:.2f}) below $1.00 minimum"
             return 'skip', reasoning, confidence_score, kelly_stake, None
 
         # Check exposure limits
@@ -511,7 +529,7 @@ class PaperBettingAgent:
                     'home_team_id': signal['home_team_id'],
                     'away_team_id': signal['away_team_id'],
                     'stake': actual_stake,
-                    'placed_at': datetime.now()
+                    'placed_at': datetime.now(timezone.utc)
                 })
 
                 logger.info(

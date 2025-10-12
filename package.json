@@ -4,5 +4,7 @@
   "workspaces": [
     "apps/*"
   ],
-  "devDependencies": {}
+  "devDependencies": {
+    "eslint": "^9.37.0"
+  }
 }

@@ -36,19 +36,52 @@ export interface SignalFilters {
 }
 
 export async function getActiveSignals(filters?: SignalFilters): Promise<{
-  signals: Signal[],
-  total: number,
-  pages: number,
-  sportCounts: { nfl: number, nba: number, nhl: number }
+  signals: Signal[];
+  total: number;
+  pages: number;
+  sportCounts: Record<string, number>;
 }> {
-  const params: any[] = [];
-  let paramIndex = 1;
-
   const page = filters?.page || 1;
   const limit = filters?.limit || 50;
   const offset = (page - 1) * limit;
 
-  let sql = `
+  const filterClauses: string[] = [
+    `s.status = 'active'`,
+    `s.expires_at > NOW()`
+  ];
+  const filterParams: any[] = [];
+
+  if (filters?.league && filters.league !== 'all') {
+    filterClauses.push(`g.sport = $${filterParams.length + 1}`);
+    filterParams.push(filters.league);
+  }
+
+  if (filters?.market && filters.market !== 'all') {
+    filterClauses.push(`m.name = $${filterParams.length + 1}`);
+    filterParams.push(filters.market);
+  }
+
+  if (filters?.minEdge && filters.minEdge > 0) {
+    filterClauses.push(`s.edge_percent >= $${filterParams.length + 1}`);
+    filterParams.push(filters.minEdge);
+  }
+
+  const whereClause = filterClauses.join('\n      AND ');
+  const baseFrom = `
+    FROM signals s
+    JOIN markets m ON s.market_id = m.id
+    JOIN games g ON s.game_id = g.id
+    LEFT JOIN teams t_home ON g.home_team_id = t_home.id
+    LEFT JOIN teams t_away ON g.away_team_id = t_away.id
+    LEFT JOIN players p ON s.player_id = p.id
+    WHERE ${whereClause}
+  `;
+
+  const limitPlaceholder = filterParams.length + 1;
+  const offsetPlaceholder = filterParams.length + 2;
+  const params = [...filterParams, limit, offset];
+
+  const sql = `
     SELECT
       s.id,
       s.uuid,
@@ -82,54 +115,22 @@ export async function getActiveSignals(filters?: SignalFilters): Promise<{
         ORDER BY o2.fetched_at DESC
         LIMIT 1
       ) as selection
-    FROM signals s
-    JOIN markets m ON s.market_id = m.id
-    JOIN games g ON s.game_id = g.id
-    LEFT JOIN teams t_home ON g.home_team_id = t_home.id
-    LEFT JOIN teams t_away ON g.away_team_id = t_away.id
-    LEFT JOIN players p ON s.player_id = p.id
-    WHERE s.status = 'active'
-      AND s.expires_at > NOW()
+    ${baseFrom}
+    ORDER BY s.edge_percent DESC, s.generated_at DESC
+    LIMIT $${limitPlaceholder} OFFSET $${offsetPlaceholder}
   `;
 
-  // League filter
-  if (filters?.league && filters.league !== 'all') {
-    sql += ` AND g.sport = $${paramIndex}`;
-    params.push(filters.league);
-    paramIndex++;
-  }
-
-  // Market filter
-  if (filters?.market && filters.market !== 'all') {
-    sql += ` AND m.name = $${paramIndex}`;
-    params.push(filters.market);
-    paramIndex++;
-  }
-
-  // Min edge filter
-  if (filters?.minEdge && filters.minEdge > 0) {
-    sql += ` AND s.edge_percent >= $${paramIndex}`;
-    params.push(filters.minEdge);
-    paramIndex++;
-  }
-
-  // Count total for pagination
   const countSql = `
     SELECT COUNT(*) as total
-    FROM signals s
-    JOIN games g ON s.game_id = g.id
-    WHERE s.status = 'active'
-      AND s.expires_at > NOW()
-      ${filters?.league && filters.league !== 'all' ? `AND g.sport = $${paramIndex}` : ''}
-      ${filters?.market && filters.market !== 'all' ? `AND EXISTS (SELECT 1 FROM markets m WHERE m.id = s.market_id AND m.name = $${paramIndex + (filters?.league && filters.league !== 'all' ? 1 : 0)})` : ''}
-      ${filters?.minEdge ? `AND s.edge_percent >= $${paramIndex + (filters?.league && filters.league !== 'all' ? 1 : 0) + (filters?.market && filters.market !== 'all' ? 1 : 0)}` : ''}
+    ${baseFrom}
   `;
 
-  const countResult = await query<{ total: number }>(countSql, params);
+  const countResult = await query<{ total: number }>(countSql, filterParams);
   const total = Number(countResult[0]?.total || 0);
-  const pages = Math.ceil(total / limit);
+  const pages = total > 0 ? Math.ceil(total / limit) : 0;
 
-  // Get sport counts (always unfiltered)
+  const signals = await query<Signal>(sql, params);
+
   const sportCountSql = `
     SELECT
       g.sport,
@@ -140,21 +141,11 @@ export async function getActiveSignals(filters?: SignalFilters): Promise<{
       AND s.expires_at > NOW()
     GROUP BY g.sport
   `;
-  const sportCountResult = await query<{ sport: string, count: number }>(sportCountSql);
-  const sportCounts = {
-    nfl: Number(sportCountResult.find(r => r.sport === 'nfl')?.count || 0),
-    nba: Number(sportCountResult.find(r => r.sport === 'nba')?.count || 0),
-    nhl: Number(sportCountResult.find(r => r.sport === 'nhl')?.count || 0),
-  };
-
-  // Add pagination
-  sql += `
-    ORDER BY s.edge_percent DESC, s.generated_at DESC
-    LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
-  `;
-  params.push(limit, offset);
-
-  const signals = await query<Signal>(sql, params);
+  const sportCountRows = await query<{ sport: string; count: number }>(sportCountSql);
+  const sportCounts = sportCountRows.reduce<Record<string, number>>((acc, row) => {
+    acc[row.sport] = Number(row.count || 0);
+    return acc;
+  }, {});
 
   return { signals, total, pages, sportCounts };
 }

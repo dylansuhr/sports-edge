@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import AutomationStatus from '@/components/AutomationStatus';
 
 interface Signal {
@@ -28,19 +28,49 @@ interface SignalsClientProps {
     market?: string;
     minEdge?: number;
     page?: number;
+    limit?: number;
   };
   total: number;
   pages: number;
-  sportCounts: { nfl: number, nba: number, nhl: number };
+  sportCounts: Record<string, number>;
 }
 
-type SortField = 'time' | 'matchup' | 'market' | 'selection' | 'line' | 'odds' | 'fair_probability' | 'edge' | 'stake' | 'sportsbook' | 'confidence';
+type SortField =
+  | 'time'
+  | 'matchup'
+  | 'market'
+  | 'selection'
+  | 'line'
+  | 'odds'
+  | 'fair_probability'
+  | 'edge'
+  | 'stake'
+  | 'sportsbook'
+  | 'confidence';
 type SortDirection = 'asc' | 'desc';
+const SUPPORTED_TABS = ['all', 'nfl', 'nba', 'nhl'] as const;
+type TabKey = (typeof SUPPORTED_TABS)[number];
 
 export default function SignalsClient({ signals, filters, total, pages, sportCounts }: SignalsClientProps) {
-  const [activeTab, setActiveTab] = useState<'all' | 'nfl' | 'nba' | 'nhl'>('all');
+  const deriveTab = (leagueValue?: string): TabKey => {
+    const normalized = (leagueValue || 'all').toLowerCase();
+    if (SUPPORTED_TABS.includes(normalized as TabKey)) {
+      return normalized as TabKey;
+    }
+    return 'all';
+  };
+
+  const [activeTab, setActiveTab] = useState<TabKey>(() => deriveTab(filters.league));
+
+  useEffect(() => {
+    setActiveTab(deriveTab(filters.league));
+  }, [filters.league]);
   const [sortField, setSortField] = useState<SortField>('edge');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+  const pageSize = filters.limit ?? 50;
+  const currentPage = filters.page || 1;
+  const startIndex = total === 0 ? 0 : (currentPage - 1) * pageSize + 1;
+  const endIndex = total === 0 ? 0 : Math.min(currentPage * pageSize, total);
 
   const getEdgeClass = (edge: number) => {
     if (edge >= 5) return 'edge-excellent';
@@ -63,9 +93,9 @@ export default function SignalsClient({ signals, filters, total, pages, sportCou
   };
 
   // Use total sport counts from server
-  const nflCount = sportCounts.nfl;
-  const nbaCount = sportCounts.nba;
-  const nhlCount = sportCounts.nhl;
+  const nflCount = sportCounts['nfl'] ?? 0;
+  const nbaCount = sportCounts['nba'] ?? 0;
+  const nhlCount = sportCounts['nhl'] ?? 0;
 
   // Filter by tab
   const filteredSignals = signals.filter(s => {
@@ -300,7 +330,7 @@ export default function SignalsClient({ signals, filters, total, pages, sportCou
       {pages > 1 && (
         <div className="pagination">
           <div className="pagination-info">
-            Showing {((filters.page || 1) - 1) * 50 + 1}-{Math.min((filters.page || 1) * 50, total)} of {total} signals
+            Showing {startIndex}-{endIndex} of {total} signals
           </div>
           <div className="pagination-buttons">
             {filters.page && filters.page > 1 && (
@@ -393,7 +423,7 @@ export default function SignalsClient({ signals, filters, total, pages, sportCou
         }
 
         .mono {
-          font-family: 'JetBrains Mono', 'Fira Code', 'Monaco', monospace;
+          font-family: var(--font-jetbrains), 'Fira Code', 'Monaco', monospace;
         }
 
         /* Tabs */
@@ -435,7 +465,7 @@ export default function SignalsClient({ signals, filters, total, pages, sportCou
         }
 
         .tab-count {
-          font-family: 'JetBrains Mono', monospace;
+          font-family: var(--font-jetbrains), 'JetBrains Mono', monospace;
           font-size: 0.85rem;
           padding: 0.15rem 0.5rem;
           background: var(--bg-card);

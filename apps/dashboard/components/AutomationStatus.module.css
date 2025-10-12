@@ -34,7 +34,7 @@
 }
 
 .terminalPrompt {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-jetbrains), 'JetBrains Mono', monospace;
   color: var(--text-secondary);
   font-size: 14px;
   margin-left: 8px;
@@ -67,13 +67,13 @@
 }
 
 .jobName {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-jetbrains), 'JetBrains Mono', monospace;
   font-size: 16px;
   font-weight: 600;
 }
 
 .frequency {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-jetbrains), 'JetBrains Mono', monospace;
   font-size: 12px;
   color: var(--text-muted);
 }
@@ -101,7 +101,7 @@
 }
 
 .countdownValue {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-jetbrains), 'JetBrains Mono', monospace;
   font-size: 18px;
   font-weight: 600;
 }

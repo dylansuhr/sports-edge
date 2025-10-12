@@ -111,7 +111,7 @@ class PaperBetSettlement:
                     return 'lost'
             else:
                 # Away team with spread
-                adjusted_score = away_score + abs(line_value)
+                adjusted_score = away_score + line_value
                 if adjusted_score > home_score:
                     return 'won'
                 elif adjusted_score == home_score:

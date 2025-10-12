@@ -202,7 +202,7 @@ export default async function BetsPage() {
 
         {bets.length === 0 ? (
           <p style={{ color: 'var(--foreground-muted)' }}>
-            No bets recorded yet. Place your first bet after the model shows "Ready" status.
+            No bets recorded yet. Place your first bet after the model shows &quot;Ready&quot; status.
           </p>
         ) : (
           <div style={{ overflowX: 'auto' }}>
@@ -255,12 +255,19 @@ export default async function BetsPage() {
                       <td style={{ padding: '12px 8px' }}>
                         ${bet.stake_amount.toFixed(2)}
                       </td>
-                      <td style={{
-                        padding: '12px 8px',
-                        color: bet.clv_percent && bet.clv_percent > 0 ? '#22c55e' : '#ef4444',
-                        fontWeight: 600
-                      }}>
-                        {bet.clv_percent
+                      <td
+                        style={{
+                          padding: '12px 8px',
+                          color:
+                            bet.clv_percent !== null && bet.clv_percent !== undefined && bet.clv_percent > 0
+                              ? '#22c55e'
+                              : bet.clv_percent !== null && bet.clv_percent !== undefined && bet.clv_percent < 0
+                                ? '#ef4444'
+                                : 'var(--foreground-muted)',
+                          fontWeight: 600
+                        }}
+                      >
+                        {bet.clv_percent !== null && bet.clv_percent !== undefined
                           ? `${bet.clv_percent > 0 ? '+' : ''}${bet.clv_percent.toFixed(2)}%`
                           : '-'}
                       </td>
@@ -282,14 +289,17 @@ export default async function BetsPage() {
                           <span style={{ color: 'var(--foreground-muted)' }}>pending</span>
                         )}
                       </td>
-                      <td style={{
-                        padding: '12px 8px',
-                        fontWeight: 700,
-                        color: bet.profit_loss
-                          ? (bet.profit_loss >= 0 ? '#22c55e' : '#ef4444')
-                          : 'var(--foreground-muted)'
-                      }}>
-                        {bet.profit_loss
+                      <td
+                        style={{
+                          padding: '12px 8px',
+                          fontWeight: 700,
+                          color:
+                            bet.profit_loss !== null && bet.profit_loss !== undefined
+                              ? (bet.profit_loss >= 0 ? '#22c55e' : '#ef4444')
+                              : 'var(--foreground-muted)'
+                        }}
+                      >
+                        {bet.profit_loss !== null && bet.profit_loss !== undefined
                           ? `${bet.profit_loss >= 0 ? '+' : ''}$${bet.profit_loss.toFixed(2)}`
                           : '-'}
                       </td>
