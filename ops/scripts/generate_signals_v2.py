@@ -323,6 +323,10 @@ class SignalGeneratorV2:
         else:  # nhl and others
             hours_before = 36  # Expire 1.5 days before game
 
+        # Ensure game_scheduled_at is timezone-aware
+        if game_scheduled_at.tzinfo is None:
+            game_scheduled_at = game_scheduled_at.replace(tzinfo=timezone.utc)
+
         candidate = game_scheduled_at - timedelta(hours=hours_before)
         now_utc = datetime.now(timezone.utc)
 
