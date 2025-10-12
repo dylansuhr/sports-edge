@@ -23,6 +23,21 @@ import type {
 } from '@/actions/paper-betting';
 import styles from './PaperBetting.module.css';
 
+// Format date to Eastern Time with day of week
+function formatGameTime(dateString: string | undefined): string {
+  if (!dateString) return 'TBD';
+  const date = new Date(dateString);
+  return date.toLocaleString('en-US', {
+    timeZone: 'America/New_York',
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true
+  }) + ' ET';
+}
+
 interface Props {
   bankroll: PaperBankroll | null;
   recentBets: PaperBet[];
@@ -291,8 +306,9 @@ export default function PaperBettingClient({
             <table className={styles.table}>
               <thead>
                 <tr>
-                  <th>Date</th>
+                  <th>Placed</th>
                   <th>Game</th>
+                  <th>Game Time</th>
                   <th>Market</th>
                   <th>Selection</th>
                   <th>Odds</th>
@@ -316,6 +332,7 @@ export default function PaperBettingClient({
                         'N/A'
                       )}
                     </td>
+                    <td className={styles.gameTimeCell}>{formatGameTime(bet.scheduled_at)}</td>
                     <td>{bet.market_name}</td>
                     <td className={styles.selectionCell}>{bet.selection}</td>
                     <td>{bet.odds_american > 0 ? '+' : ''}{bet.odds_american}</td>
@@ -348,6 +365,7 @@ export default function PaperBettingClient({
                 <tr>
                   <th>Time</th>
                   <th>Game</th>
+                  <th>Game Time</th>
                   <th>Market</th>
                   <th>Decision</th>
                   <th>Confidence</th>
@@ -370,6 +388,7 @@ export default function PaperBettingClient({
                         'N/A'
                       )}
                     </td>
+                    <td className={styles.gameTimeCell}>{formatGameTime(decision.scheduled_at)}</td>
                     <td>{decision.market_name || 'N/A'}</td>
                     <td>
                       <span className={`${styles.decisionBadge} ${decision.decision === 'place' ? styles.decisionPlace : styles.decisionSkip}`}>

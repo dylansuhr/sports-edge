@@ -51,15 +51,15 @@ export default function SignalsClient({ signals, filters, total, pages, sportCou
 
   const formatTime = (dateStr: string) => {
     const date = new Date(dateStr);
-    const now = new Date();
-    const diffMs = date.getTime() - now.getTime();
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-
-    if (diffHours < 24) {
-      return `${diffHours}h`;
-    }
-    const diffDays = Math.floor(diffHours / 24);
-    return `${diffDays}d`;
+    return date.toLocaleString('en-US', {
+      timeZone: 'America/New_York',
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    }) + ' ET';
   };
 
   // Use total sport counts from server

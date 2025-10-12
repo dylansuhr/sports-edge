@@ -219,6 +219,13 @@
   white-space: nowrap;
 }
 
+.gameTimeCell {
+  font-size: 0.85rem;
+  color: #22c55e;
+  white-space: nowrap;
+  font-family: monospace;
+}
+
 .awayTeam {
   color: #888;
   font-size: 0.9em;

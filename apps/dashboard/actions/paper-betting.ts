@@ -53,6 +53,7 @@ export interface PaperBetDecision {
   exposure_pct: number;
   correlation_risk?: string;
   timestamp: string;
+  scheduled_at?: string;
   home_team?: string;
   away_team?: string;
   market_name?: string;
@@ -115,6 +116,7 @@ export async function getRecentDecisions(limit: number = 50): Promise<PaperBetDe
     SELECT
       pbd.*,
       g.sport,
+      g.scheduled_at,
       t_home.name as home_team,
       t_away.name as away_team,
       m.name as market_name,
