@@ -52,7 +52,19 @@ export async function getRecentBets(limit: number = 100): Promise<Bet[]> {
     LIMIT $1
   `;
 
-  return await query<Bet>(sql, [limit]);
+  const rows = await query<any>(sql, [limit]);
+  return rows.map(row => ({
+    ...row,
+    id: Number(row.id),
+    game_id: Number(row.game_id),
+    player_id: row.player_id ? Number(row.player_id) : undefined,
+    line_value: row.line_value ? Number(row.line_value) : undefined,
+    odds_american: Number(row.odds_american),
+    stake_amount: Number(row.stake_amount),
+    profit_loss: row.profit_loss ? Number(row.profit_loss) : undefined,
+    clv_percent: row.clv_percent ? Number(row.clv_percent) : undefined,
+    close_odds_american: row.close_odds_american ? Number(row.close_odds_american) : undefined,
+  }));
 }
 
 export async function getBetStats(): Promise<{
@@ -84,12 +96,25 @@ export async function getBetStats(): Promise<{
   `;
 
   const results = await query<any>(sql);
-  return results[0] || {
-    total_bets: 0,
-    total_staked: 0,
-    total_pnl: 0,
-    roi: 0,
-    avg_clv: 0,
-    win_rate: 0
+  const row = results[0];
+
+  if (!row) {
+    return {
+      total_bets: 0,
+      total_staked: 0,
+      total_pnl: 0,
+      roi: 0,
+      avg_clv: 0,
+      win_rate: 0
+    };
+  }
+
+  return {
+    total_bets: Number(row.total_bets || 0),
+    total_staked: Number(row.total_staked || 0),
+    total_pnl: Number(row.total_pnl || 0),
+    roi: Number(row.roi || 0),
+    avg_clv: Number(row.avg_clv || 0),
+    win_rate: Number(row.win_rate || 0),
   };
 }
