@@ -129,7 +129,22 @@ export async function getActiveSignals(filters?: SignalFilters): Promise<{
   const total = Number(countResult[0]?.total || 0);
   const pages = total > 0 ? Math.ceil(total / limit) : 0;
 
-  const signals = await query<Signal>(sql, params);
+  const signalRows = await query<any>(sql, params);
+
+  // Convert numeric fields from strings to numbers
+  const signals: Signal[] = signalRows.map(row => ({
+    ...row,
+    id: Number(row.id),
+    game_id: Number(row.game_id),
+    player_id: row.player_id ? Number(row.player_id) : undefined,
+    line_value: row.line_value ? Number(row.line_value) : undefined,
+    odds_american: Number(row.odds_american),
+    fair_probability: Number(row.fair_probability),
+    implied_probability: Number(row.implied_probability),
+    edge_percent: Number(row.edge_percent),
+    kelly_fraction: Number(row.kelly_fraction),
+    recommended_stake_pct: Number(row.recommended_stake_pct),
+  }));
 
   const sportCountSql = `
     SELECT
@@ -185,5 +200,20 @@ export async function getSignalsByEdge(minEdge: number = 3.0): Promise<Signal[]>
     LIMIT 50
   `;
 
-  return await query<Signal>(sql, [minEdge]);
+  const rows = await query<any>(sql, [minEdge]);
+
+  // Convert numeric fields from strings to numbers
+  return rows.map(row => ({
+    ...row,
+    id: Number(row.id),
+    game_id: Number(row.game_id),
+    player_id: row.player_id ? Number(row.player_id) : undefined,
+    line_value: row.line_value ? Number(row.line_value) : undefined,
+    odds_american: Number(row.odds_american),
+    fair_probability: Number(row.fair_probability),
+    implied_probability: Number(row.implied_probability),
+    edge_percent: Number(row.edge_percent),
+    kelly_fraction: Number(row.kelly_fraction),
+    recommended_stake_pct: Number(row.recommended_stake_pct),
+  }));
 }
