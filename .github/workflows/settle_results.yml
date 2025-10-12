@@ -36,11 +36,47 @@ jobs:
         run: |
           python ops/scripts/settle_results_v2.py --leagues nfl,nba,nhl
 
-      - name: Notify on failure
+      - name: Create issue on failure
         if: failure()
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-        run: |
-          curl -X POST $SLACK_WEBHOOK_URL \
-            -H 'Content-Type: application/json' \
-            -d '{"text":"⚠️ Results settlement failed - check GitHub Actions logs"}'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = '⚠️ Results Settlement Failed';
+            const body = `
+            ## Automation Failure
+
+            The **Results Settlement** workflow failed on its scheduled run.
+
+            **Workflow Run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            **Time:** ${new Date().toISOString()}
+
+            ### Recommended Actions
+            1. Check the workflow logs for errors
+            2. Verify The Odds API key is valid
+            3. Check database connectivity
+            4. Verify game results are available
+
+            ### Impact
+            - Paper bets won't be settled
+            - ELO ratings won't be updated
+            - Bankroll calculations may be incorrect
+            - Performance metrics will be stale
+            `;
+
+            // Check if issue already exists
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'automation-failure,settlement'
+            });
+
+            if (issues.data.length === 0) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: title,
+                body: body,
+                labels: ['automation-failure', 'settlement', 'high-priority']
+              });
+            }

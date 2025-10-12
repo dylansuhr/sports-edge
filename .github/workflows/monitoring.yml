@@ -1,0 +1,111 @@
+name: System Monitoring
+
+on:
+  schedule:
+    # Run health checks every hour
+    - cron: '0 * * * *'
+  workflow_dispatch:
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check system health
+        id: health
+        run: |
+          # Check if dashboard is accessible (if deployed)
+          # For now, just verify the automation workflows are running
+          echo "Checking workflow status..."
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "Health check failed! System may be degraded."
+          # In production, add Slack/email notifications here
+
+  verify-automation:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install psycopg2-binary python-dotenv
+
+      - name: Check database connectivity
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          python -c "
+          import psycopg2
+          import os
+          import sys
+          from datetime import datetime, timedelta
+
+          try:
+              conn = psycopg2.connect(os.environ['DATABASE_URL'])
+              cur = conn.cursor()
+
+              # Check signals staleness
+              cur.execute('''
+                  SELECT
+                      MAX(generated_at) as last_generated,
+                      EXTRACT(EPOCH FROM (NOW() - MAX(generated_at))) / 3600 as hours_ago
+                  FROM signals
+                  WHERE status = 'active'
+              ''')
+              result = cur.fetchone()
+
+              if result and result[0]:
+                  last_gen = result[0]
+                  hours_ago = float(result[1])
+                  print(f'Last signal generated: {last_gen} ({hours_ago:.2f} hours ago)')
+
+                  if hours_ago > 2:
+                      print(f'WARNING: Signals are stale ({hours_ago:.2f} hours old)')
+                      sys.exit(1)
+              else:
+                  print('WARNING: No active signals found')
+                  sys.exit(1)
+
+              # Check odds staleness
+              cur.execute('''
+                  SELECT
+                      MAX(fetched_at) as last_fetched,
+                      EXTRACT(EPOCH FROM (NOW() - MAX(fetched_at))) / 3600 as hours_ago
+                  FROM odds_snapshots
+              ''')
+              result = cur.fetchone()
+
+              if result and result[0]:
+                  last_fetch = result[0]
+                  hours_ago = float(result[1])
+                  print(f'Last odds fetched: {last_fetch} ({hours_ago:.2f} hours ago)')
+
+                  if hours_ago > 1:
+                      print(f'WARNING: Odds are stale ({hours_ago:.2f} hours old)')
+                      sys.exit(1)
+              else:
+                  print('WARNING: No odds snapshots found')
+                  sys.exit(1)
+
+              print('✓ System health check passed')
+              cur.close()
+              conn.close()
+
+          except Exception as e:
+              print(f'ERROR: Database health check failed: {e}')
+              sys.exit(1)
+          "
+
+      - name: Notify on staleness
+        if: failure()
+        run: |
+          echo "::warning::System data is stale. Check automation workflows."
