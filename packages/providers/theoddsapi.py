@@ -54,13 +54,14 @@ class TheOddsAPIProvider:
         'mybookieag': 'mybookie'
     }
 
-    def __init__(self, api_key: str, rate_limit_seconds: int = 6):
+    def __init__(self, api_key: str, rate_limit_seconds: int = 6, db_connection=None):
         """
         Initialize The Odds API provider.
 
         Args:
             api_key: The Odds API key
             rate_limit_seconds: Minimum seconds between requests (default 6 = 10 req/min)
+            db_connection: Optional database connection for usage logging
         """
         if not api_key:
             raise ValueError("THE_ODDS_API_KEY is required")
@@ -69,9 +70,10 @@ class TheOddsAPIProvider:
         self.base_url = 'https://api.the-odds-api.com/v4'
         self.rate_limit_seconds = rate_limit_seconds
         self.last_request_time = 0
+        self.db = db_connection
 
-    def _rate_limited_request(self, url: str, params: Dict) -> Optional[Dict]:
-        """Make a rate-limited API request."""
+    def _rate_limited_request(self, url: str, params: Dict, league: str = None) -> Optional[Dict]:
+        """Make a rate-limited API request with usage logging."""
         # Enforce rate limit
         elapsed = time.time() - self.last_request_time
         if elapsed < self.rate_limit_seconds:
@@ -85,9 +87,16 @@ class TheOddsAPIProvider:
             'Accept': 'application/json'
         }
 
+        response_status = None
+        response_message = None
+        success = False
+        remaining = None
+        used = None
+
         try:
             response = requests.get(url, params=params, headers=headers, timeout=15)
             self.last_request_time = time.time()
+            response_status = response.status_code
 
             # Check remaining quota
             remaining = response.headers.get('x-requests-remaining')
@@ -96,18 +105,56 @@ class TheOddsAPIProvider:
                 print(f"[TheOddsAPI] Requests remaining: {remaining}/{used}")
 
             if response.status_code == 200:
+                success = True
+                self._log_api_usage(url, league, 1, remaining, used, response_status, None, success)
                 return response.json()
             elif response.status_code == 401:
+                # Check if it's quota exhaustion (common 401 cause)
+                response_message = response.text
+                if 'quota' in response.text.lower() or 'usage' in response.text.lower():
+                    self._log_api_usage(url, league, 1, remaining, used, response_status, response_message, success)
+                    raise ValueError(f"🚨 CRITICAL: API QUOTA EXHAUSTED 🚨\n{response.text}\nUpgrade at: https://the-odds-api.com/liveapi/guides/v4/#pricing")
+                self._log_api_usage(url, league, 1, remaining, used, response_status, response_message, success)
                 raise ValueError(f"Invalid API key: {response.text}")
             elif response.status_code == 429:
+                response_message = response.text
+                self._log_api_usage(url, league, 1, remaining, used, response_status, response_message, success)
                 raise ValueError(f"Rate limit exceeded: {response.text}")
             else:
+                response_message = response.text[:200]
+                self._log_api_usage(url, league, 1, remaining, used, response_status, response_message, success)
                 print(f"[TheOddsAPI] HTTP {response.status_code}: {response.text[:200]}")
                 return None
 
         except requests.exceptions.RequestException as e:
+            response_message = str(e)
+            self._log_api_usage(url, league, 1, remaining, used, response_status, response_message, success)
             print(f"[TheOddsAPI] Request error: {e}")
             return None
+
+    def _log_api_usage(self, url, league, credits, remaining, used, status, message, success):
+        """Log API usage to database for quota tracking."""
+        if not self.db:
+            return
+
+        try:
+            endpoint = url.replace(self.base_url, '')  # Remove base URL
+            with self.db.get_connection() as conn:
+                with conn.cursor() as cur:
+                    cur.execute("""
+                        INSERT INTO api_usage_log (
+                            provider, endpoint, league, credits_used,
+                            credits_remaining, credits_total,
+                            response_status, response_message, success
+                        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    """, (
+                        'theoddsapi', endpoint, league, credits,
+                        int(remaining) if remaining else None,
+                        int(used) if used else None,
+                        status, message, success
+                    ))
+        except Exception as e:
+            print(f"[TheOddsAPI] Failed to log API usage: {e}")
 
     def fetch_odds(
         self,
@@ -144,7 +191,7 @@ class TheOddsAPIProvider:
 
         print(f"[TheOddsAPI] Fetching {league.upper()} odds for markets: {markets}")
 
-        data = self._rate_limited_request(url, params)
+        data = self._rate_limited_request(url, params, league=league)
         if not data:
             return []
 

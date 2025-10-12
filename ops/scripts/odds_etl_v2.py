@@ -200,12 +200,12 @@ def main():
     print(f"[ETL] Starting odds ETL for leagues: {', '.join(leagues)}")
     print(f"[ETL] Timestamp: {datetime.now(timezone.utc).isoformat()}")
 
-    # Initialize provider
-    api_key = os.getenv('THE_ODDS_API_KEY')
-    provider = TheOddsAPIProvider(api_key, rate_limit_seconds=6)
-
     # Initialize database
     db = get_db()
+
+    # Initialize provider with database connection for usage logging
+    api_key = os.getenv('THE_ODDS_API_KEY')
+    provider = TheOddsAPIProvider(api_key, rate_limit_seconds=6, db_connection=db)
 
     # Check for core tables before proceeding
     print(f"\n[ETL] Checking database schema...")
