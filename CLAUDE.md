@@ -2,6 +2,7 @@
 
 **Last Updated:** October 11, 2025
 **Status:** Production-Ready with Paper Betting System (AI-Powered Mock Betting ✅)
+**Recent Fixes:** Duplicate signals removed (137k→1.7k), correlation risk protection fixed
 
 ---
 
@@ -295,7 +296,20 @@ claude/ROADMAP.md            # Detailed roadmap, current status, next steps
 8. **Autonomous Learning** - Self-analyzing, self-tuning model
 9. **Performance Dashboard** - Visual readiness indicator + trend charts
 10. **ELO System** - Dynamic ratings that update on settlement
-11. **Paper Betting System** - **NEW** AI autonomously places mock bets with $10,000 virtual bankroll
+11. **Paper Betting System** - AI autonomously places mock bets with $1,000 virtual bankroll
+12. **Game Time Display** - Shows game date/time in Eastern Time with day of week
+13. **Duplicate Prevention** - Unique index prevents duplicate signals at database level
+
+### ⚠️ Recent Fixes (Oct 11, 2025)
+
+1. **Duplicate Signals Fixed** - Removed 137,306 duplicate signals (139k → 1,695 unique)
+   - Added unique partial index on (game_id, market_id, odds_american, sportsbook)
+   - Prevents future duplicates at database level
+2. **Paper Betting Correlation Bug Fixed** - AI now diversifies bets across multiple games
+   - Was placing all 10 bets on same game
+   - Now correctly skips subsequent bets on same game due to correlation risk
+3. **Game Time Display** - Added Eastern Time with day of week to all signal/bet displays
+   - Format: "Mon, Oct 14, 8:00 PM ET"
 
 ### ⚠️ Model Calibration Period
 
