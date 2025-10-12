@@ -1,5 +1,7 @@
 import { getRecentBets, getBetStats } from '@/actions/bets';
 
+export const dynamic = 'force-dynamic';
+
 export default async function BetsPage() {
   const [bets, stats] = await Promise.all([
     getRecentBets(100),

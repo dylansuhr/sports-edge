@@ -1,6 +1,8 @@
 import { getActiveSignals } from '@/actions/signals';
 import SignalsClient from './SignalsClient';
 
+export const dynamic = 'force-dynamic';
+
 export default async function SignalsPage({
   searchParams,
 }: {

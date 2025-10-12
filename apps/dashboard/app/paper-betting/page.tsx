@@ -8,6 +8,8 @@ import {
 } from '@/actions/paper-betting';
 import PaperBettingClient from './PaperBettingClient';
 
+export const dynamic = 'force-dynamic';
+
 export default async function PaperBettingPage() {
   const [
     bankroll,

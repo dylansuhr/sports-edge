@@ -8,7 +8,7 @@ import {
 import ModelReadinessCard from '@/components/ModelReadinessCard';
 import PerformanceCharts from './PerformanceCharts';
 
-export const revalidate = 60; // Revalidate every 60 seconds
+export const dynamic = 'force-dynamic';
 
 export default async function PerformancePage() {
   const [readiness, dailyPerformance, sportPerformance, marketPerformance, overall] = await Promise.all([
