@@ -83,9 +83,9 @@ CREATE INDEX IF NOT EXISTS idx_paper_bets_signal_id ON paper_bets(signal_id);
 CREATE INDEX IF NOT EXISTS idx_paper_bet_decisions_timestamp ON paper_bet_decisions(timestamp DESC);
 CREATE INDEX IF NOT EXISTS idx_paper_bet_decisions_signal_id ON paper_bet_decisions(signal_id);
 
--- Initialize paper bankroll with $10,000 starting balance
+-- Initialize paper bankroll with $1,000 starting balance (realistic for testing)
 INSERT INTO paper_bankroll (balance, starting_balance)
-VALUES (10000.00, 10000.00)
+VALUES (1000.00, 1000.00)
 ON CONFLICT DO NOTHING;
 
 -- Create default conservative strategy
