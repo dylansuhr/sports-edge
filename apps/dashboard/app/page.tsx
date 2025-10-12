@@ -8,7 +8,7 @@ export default async function Home() {
   return (
     <main style={{ padding: '24px', maxWidth: '1400px', margin: '0 auto' }}>
       <h1 style={{
-        fontFamily: 'var(--font-mono)',
+        fontFamily: 'monospace',
         fontSize: '32px',
         marginBottom: '8px',
         letterSpacing: '0.05em'
@@ -16,7 +16,7 @@ export default async function Home() {
         SPORTSEDGE DASHBOARD
       </h1>
       <p style={{
-        color: 'var(--foreground-muted)',
+        color: '#888',
         marginBottom: '32px',
         fontSize: '16px'
       }}>
@@ -40,7 +40,7 @@ export default async function Home() {
         }}>
           <div style={{
             fontSize: '12px',
-            color: 'var(--foreground-muted)',
+            color: '#888',
             textTransform: 'uppercase',
             letterSpacing: '0.05em',
             marginBottom: '8px'
@@ -48,16 +48,16 @@ export default async function Home() {
             Open Signals
           </div>
           <div style={{
-            fontFamily: 'var(--font-mono)',
+            fontFamily: 'monospace',
             fontSize: '32px',
             fontWeight: 700,
-            color: 'var(--accent)'
+            color: '#00ff88'
           }}>
             {kpis.openSignalsCount}
           </div>
           <div style={{
             fontSize: '12px',
-            color: 'var(--foreground-muted)',
+            color: '#888',
             marginTop: '8px'
           }}>
             Active betting opportunities
@@ -74,7 +74,7 @@ export default async function Home() {
         }}>
           <div style={{
             fontSize: '12px',
-            color: 'var(--foreground-muted)',
+            color: '#888',
             textTransform: 'uppercase',
             letterSpacing: '0.05em',
             marginBottom: '8px'
@@ -82,7 +82,7 @@ export default async function Home() {
             Avg Edge
           </div>
           <div style={{
-            fontFamily: 'var(--font-mono)',
+            fontFamily: 'monospace',
             fontSize: '32px',
             fontWeight: 700,
             color: '#22c55e'
@@ -91,7 +91,7 @@ export default async function Home() {
           </div>
           <div style={{
             fontSize: '12px',
-            color: 'var(--foreground-muted)',
+            color: '#888',
             marginTop: '8px'
           }}>
             Current active signals
@@ -108,7 +108,7 @@ export default async function Home() {
         }}>
           <div style={{
             fontSize: '12px',
-            color: 'var(--foreground-muted)',
+            color: '#888',
             textTransform: 'uppercase',
             letterSpacing: '0.05em',
             marginBottom: '8px'
@@ -116,7 +116,7 @@ export default async function Home() {
             7-Day CLV
           </div>
           <div style={{
-            fontFamily: 'var(--font-mono)',
+            fontFamily: 'monospace',
             fontSize: '32px',
             fontWeight: 700,
             color: kpis.clvLast7Days >= 0 ? '#22c55e' : '#ef4444'
@@ -125,7 +125,7 @@ export default async function Home() {
           </div>
           <div style={{
             fontSize: '12px',
-            color: 'var(--foreground-muted)',
+            color: '#888',
             marginTop: '8px'
           }}>
             Closing line value
@@ -142,7 +142,7 @@ export default async function Home() {
         }}>
           <div style={{
             fontSize: '12px',
-            color: 'var(--foreground-muted)',
+            color: '#888',
             textTransform: 'uppercase',
             letterSpacing: '0.05em',
             marginBottom: '8px'
@@ -150,7 +150,7 @@ export default async function Home() {
             Lifetime ROI
           </div>
           <div style={{
-            fontFamily: 'var(--font-mono)',
+            fontFamily: 'monospace',
             fontSize: '32px',
             fontWeight: 700,
             color: kpis.lifetimeROI >= 0 ? '#22c55e' : '#ef4444'
@@ -159,7 +159,7 @@ export default async function Home() {
           </div>
           <div style={{
             fontSize: '12px',
-            color: 'var(--foreground-muted)',
+            color: '#888',
             marginTop: '8px'
           }}>
             All-time return on investment
@@ -177,7 +177,7 @@ export default async function Home() {
         marginBottom: '32px'
       }}>
         <h2 style={{
-          fontFamily: 'var(--font-mono)',
+          fontFamily: 'monospace',
           fontSize: '18px',
           fontWeight: 700,
           marginBottom: '16px',
@@ -190,18 +190,18 @@ export default async function Home() {
           <div>
             <div style={{
               fontSize: '12px',
-              color: 'var(--foreground-muted)',
+              color: '#888',
               textTransform: 'uppercase',
               letterSpacing: '0.05em'
             }}>
               Bets Placed
             </div>
             <div style={{
-              fontFamily: 'var(--font-mono)',
+              fontFamily: 'monospace',
               fontSize: '24px',
               fontWeight: 600,
               marginTop: '4px',
-              color: 'var(--accent)'
+              color: '#00ff88'
             }}>
               {stats.betsPlaced}
             </div>
@@ -209,18 +209,18 @@ export default async function Home() {
           <div>
             <div style={{
               fontSize: '12px',
-              color: 'var(--foreground-muted)',
+              color: '#888',
               textTransform: 'uppercase',
               letterSpacing: '0.05em'
             }}>
               Bets Settled
             </div>
             <div style={{
-              fontFamily: 'var(--font-mono)',
+              fontFamily: 'monospace',
               fontSize: '24px',
               fontWeight: 600,
               marginTop: '4px',
-              color: 'var(--accent)'
+              color: '#00ff88'
             }}>
               {stats.betsSettled}
             </div>
@@ -228,18 +228,18 @@ export default async function Home() {
           <div>
             <div style={{
               fontSize: '12px',
-              color: 'var(--foreground-muted)',
+              color: '#888',
               textTransform: 'uppercase',
               letterSpacing: '0.05em'
             }}>
               Win Rate
             </div>
             <div style={{
-              fontFamily: 'var(--font-mono)',
+              fontFamily: 'monospace',
               fontSize: '24px',
               fontWeight: 600,
               marginTop: '4px',
-              color: 'var(--accent)'
+              color: '#00ff88'
             }}>
               {stats.winRate}%
             </div>
@@ -260,8 +260,8 @@ export default async function Home() {
           background: 'rgba(0, 0, 0, 0.3)',
           backdropFilter: 'blur(10px)',
           textDecoration: 'none',
-          color: 'var(--foreground)',
-          fontFamily: 'var(--font-mono)',
+          color: '#ffffff',
+          fontFamily: 'monospace',
           fontWeight: 500,
           fontSize: '14px',
           textTransform: 'uppercase',
@@ -278,8 +278,8 @@ export default async function Home() {
           background: 'rgba(0, 0, 0, 0.3)',
           backdropFilter: 'blur(10px)',
           textDecoration: 'none',
-          color: 'var(--foreground)',
-          fontFamily: 'var(--font-mono)',
+          color: '#ffffff',
+          fontFamily: 'monospace',
           fontWeight: 500,
           fontSize: '14px',
           textTransform: 'uppercase',
@@ -289,6 +289,24 @@ export default async function Home() {
         }}>
           📈 Performance
         </Link>
+        <Link href="/paper-betting" style={{
+          padding: '20px',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          borderRadius: '8px',
+          background: 'rgba(0, 0, 0, 0.3)',
+          backdropFilter: 'blur(10px)',
+          textDecoration: 'none',
+          color: '#ffffff',
+          fontFamily: 'monospace',
+          fontWeight: 500,
+          fontSize: '14px',
+          textTransform: 'uppercase',
+          letterSpacing: '0.05em',
+          transition: 'all 0.2s',
+          cursor: 'pointer'
+        }}>
+          🤖 Paper Betting
+        </Link>
         <Link href="/bets" style={{
           padding: '20px',
           border: '1px solid rgba(255, 255, 255, 0.1)',
@@ -296,8 +314,8 @@ export default async function Home() {
           background: 'rgba(0, 0, 0, 0.3)',
           backdropFilter: 'blur(10px)',
           textDecoration: 'none',
-          color: 'var(--foreground)',
-          fontFamily: 'var(--font-mono)',
+          color: '#ffffff',
+          fontFamily: 'monospace',
           fontWeight: 500,
           fontSize: '14px',
           textTransform: 'uppercase',
