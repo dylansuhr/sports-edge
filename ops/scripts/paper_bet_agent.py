@@ -504,6 +504,16 @@ class PaperBettingAgent:
                 bet_id = self.place_paper_bet(signal, actual_stake)
                 bets_placed += 1
 
+                # Add to pending bets so correlation check works for subsequent bets
+                self.pending_bets.append({
+                    'id': bet_id,
+                    'game_id': signal['game_id'],
+                    'home_team_id': signal['home_team_id'],
+                    'away_team_id': signal['away_team_id'],
+                    'stake': actual_stake,
+                    'placed_at': datetime.now()
+                })
+
                 logger.info(
                     f"PLACED bet #{bet_id}: {signal['home_team']} vs {signal['away_team']} | "
                     f"{signal['market_name']} - {signal['selection']} | "
