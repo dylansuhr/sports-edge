@@ -1,8 +1,8 @@
 # SportsEdge - Project Context for Claude Code
 
-**Last Updated:** October 11, 2025
+**Last Updated:** October 12, 2025
 **Status:** Production-Ready with Paper Betting System (AI-Powered Mock Betting ✅)
-**Recent Fixes:** Duplicate signals removed (137k→1.7k), correlation risk protection fixed
+**Recent Fixes:** Dashboard performance optimization, PostgreSQL NUMERIC type handling, CI/CD automation fixes
 
 ---
 
@@ -300,16 +300,30 @@ claude/ROADMAP.md            # Detailed roadmap, current status, next steps
 12. **Game Time Display** - Shows game date/time in Eastern Time with day of week
 13. **Duplicate Prevention** - Unique index prevents duplicate signals at database level
 
-### ⚠️ Recent Fixes (Oct 11, 2025)
+### ⚠️ Recent Fixes
 
+**Oct 12, 2025:**
+1. **PostgreSQL NUMERIC Type Handling** - Fixed runtime errors across all dashboard pages
+   - Added Number() conversion for all numeric fields in database queries
+   - Affects: signals, kpis, performance, bets, paper-betting actions
+   - Error: "toFixed is not a function" resolved
+2. **CI/CD Build Fixes** - Resolved GitHub Actions failures
+   - Created missing `apps/dashboard/lib/db.ts` database utility
+   - Fixed .gitignore to allow dashboard lib directory
+   - Added `export const dynamic = 'force-dynamic'` to prevent static generation
+3. **Signal Generation Automation** - Fixed timezone comparison error
+   - Added timezone-awareness check in calculate_expiry_time()
+   - Workflow now runs successfully every 20 minutes
+4. **Performance Optimizations** - Faster dashboard loads
+   - SWC minification, tree-shaking, image optimization
+   - Reduced initial page size (50→25 items)
+   - Added 7 database indices for common queries
+   - Created skeleton loading screen
+
+**Oct 11, 2025:**
 1. **Duplicate Signals Fixed** - Removed 137,306 duplicate signals (139k → 1,695 unique)
-   - Added unique partial index on (game_id, market_id, odds_american, sportsbook)
-   - Prevents future duplicates at database level
 2. **Paper Betting Correlation Bug Fixed** - AI now diversifies bets across multiple games
-   - Was placing all 10 bets on same game
-   - Now correctly skips subsequent bets on same game due to correlation risk
-3. **Game Time Display** - Added Eastern Time with day of week to all signal/bet displays
-   - Format: "Mon, Oct 14, 8:00 PM ET"
+3. **Game Time Display** - Added Eastern Time with day of week to all displays
 
 ### ⚠️ Model Calibration Period
 
@@ -432,12 +446,36 @@ See `claude/ROADMAP.md` for full details. Top priorities:
 
 **Full troubleshooting guide:** See `claude/ROADMAP.md` section "Troubleshooting"
 
+**Session summaries:** See `claude/SESSION_*.md` for detailed fix documentation
+
 **Quick diagnostics:**
 ```bash
 make verify      # System health check
 make db-ping     # Test database connection
 psql "$DATABASE_URL" -c "SELECT COUNT(*) FROM signals WHERE status='active'"  # Check signals
 ```
+
+### Common Issues
+
+**".toFixed is not a function" errors:**
+- **Cause:** PostgreSQL NUMERIC/DECIMAL types returned as strings
+- **Fix:** Convert with `Number(value)` in database action queries
+- **See:** `claude/SESSION_OCT12_2025.md` for detailed fix pattern
+
+**"Module not found: @/lib/db":**
+- **Cause:** Missing database utility or .gitignore blocking lib directory
+- **Fix:** Ensure `apps/dashboard/lib/db.ts` exists, .gitignore allows it
+- **See:** `claude/SESSION_OCT12_2025.md` section 2
+
+**Next.js build trying to connect to database:**
+- **Cause:** Static generation attempting to render pages at build time
+- **Fix:** Add `export const dynamic = 'force-dynamic'` to page
+- **See:** `claude/SESSION_OCT12_2025.md` section 3
+
+**Signal generation timezone errors:**
+- **Cause:** Comparing timezone-naive with timezone-aware datetimes
+- **Fix:** Check `tzinfo` and convert to UTC before comparison
+- **See:** `claude/SESSION_OCT12_2025.md` section 4
 
 ---
 

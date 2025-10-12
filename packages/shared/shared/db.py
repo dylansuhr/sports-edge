@@ -253,7 +253,7 @@ class Database:
         player_id: int = None,
         raw_implied_probability: float = None
     ) -> int:
-        """Insert a betting signal."""
+        """Insert or update a betting signal (upsert to handle duplicates)."""
         def _insert():
             with self.get_connection() as conn:
                 with conn.cursor() as cur:
@@ -266,6 +266,19 @@ class Database:
                             model_version, expires_at
                         )
                         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        ON CONFLICT (game_id, market_id, odds_american, sportsbook)
+                        WHERE status = 'active'
+                        DO UPDATE SET
+                            fair_probability = EXCLUDED.fair_probability,
+                            implied_probability = EXCLUDED.implied_probability,
+                            raw_implied_probability = EXCLUDED.raw_implied_probability,
+                            edge_percent = EXCLUDED.edge_percent,
+                            kelly_fraction = EXCLUDED.kelly_fraction,
+                            recommended_stake_pct = EXCLUDED.recommended_stake_pct,
+                            confidence_level = EXCLUDED.confidence_level,
+                            model_version = EXCLUDED.model_version,
+                            expires_at = EXCLUDED.expires_at,
+                            generated_at = CURRENT_TIMESTAMP
                         RETURNING id
                     """, (
                         game_id, player_id, market_id, sportsbook,
