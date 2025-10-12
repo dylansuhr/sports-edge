@@ -11,7 +11,7 @@ export default async function SignalsPage({
     market: searchParams.market,
     minEdge: searchParams.minEdge ? parseFloat(searchParams.minEdge) : undefined,
     page: searchParams.page ? parseInt(searchParams.page) : 1,
-    limit: 50,
+    limit: 25, // Reduced from 50 for faster initial load
   };
 
   const { signals, total, pages, sportCounts } = await getActiveSignals(filters);
