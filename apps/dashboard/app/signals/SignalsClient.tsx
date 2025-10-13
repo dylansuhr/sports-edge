@@ -48,23 +48,7 @@ type SortField =
   | 'sportsbook'
   | 'confidence';
 type SortDirection = 'asc' | 'desc';
-const SUPPORTED_TABS = ['all', 'nfl', 'nba', 'nhl'] as const;
-type TabKey = (typeof SUPPORTED_TABS)[number];
-
 export default function SignalsClient({ signals, filters, total, pages, sportCounts }: SignalsClientProps) {
-  const deriveTab = (leagueValue?: string): TabKey => {
-    const normalized = (leagueValue || 'all').toLowerCase();
-    if (SUPPORTED_TABS.includes(normalized as TabKey)) {
-      return normalized as TabKey;
-    }
-    return 'all';
-  };
-
-  const [activeTab, setActiveTab] = useState<TabKey>(() => deriveTab(filters.league));
-
-  useEffect(() => {
-    setActiveTab(deriveTab(filters.league));
-  }, [filters.league]);
   const [sortField, setSortField] = useState<SortField>('edge');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const pageSize = filters.limit ?? 50;
@@ -92,22 +76,8 @@ export default function SignalsClient({ signals, filters, total, pages, sportCou
     }) + ' ET';
   };
 
-  // Use total sport counts from server
-  const nflCount = sportCounts['nfl'] ?? 0;
-  const nbaCount = sportCounts['nba'] ?? 0;
-  const nhlCount = sportCounts['nhl'] ?? 0;
-
-  // Filter by tab
-  const filteredSignals = signals.filter(s => {
-    if (activeTab === 'all') return true;
-    if (activeTab === 'nfl') return s.league === 'nfl';
-    if (activeTab === 'nba') return s.league === 'nba';
-    if (activeTab === 'nhl') return s.league === 'nhl';
-    return true;
-  });
-
-  // Sort signals
-  const sortedSignals = [...filteredSignals].sort((a, b) => {
+  // Sort signals (NFL-only, no filtering needed)
+  const sortedSignals = [...signals].sort((a, b) => {
     let comparison = 0;
 
     switch (sortField) {
@@ -174,36 +144,16 @@ export default function SignalsClient({ signals, filters, total, pages, sportCou
         {/* Automation Status */}
         <AutomationStatus />
 
-        {/* Sport Tabs */}
-        <div className="tabs">
-          <button
-            className={`tab ${activeTab === 'all' ? 'active' : ''}`}
-            onClick={() => setActiveTab('all')}
-          >
-            <span className="tab-label">ALL</span>
-            <span className="tab-count">{total}</span>
-          </button>
-          <button
-            className={`tab ${activeTab === 'nfl' ? 'active' : ''}`}
-            onClick={() => setActiveTab('nfl')}
-          >
-            <span className="tab-label">NFL</span>
-            <span className="tab-count">{nflCount}</span>
-          </button>
-          <button
-            className={`tab ${activeTab === 'nba' ? 'active' : ''}`}
-            onClick={() => setActiveTab('nba')}
-          >
-            <span className="tab-label">NBA</span>
-            <span className="tab-count">{nbaCount}</span>
-          </button>
-          <button
-            className={`tab ${activeTab === 'nhl' ? 'active' : ''}`}
-            onClick={() => setActiveTab('nhl')}
-          >
-            <span className="tab-label">NHL</span>
-            <span className="tab-count">{nhlCount}</span>
-          </button>
+        {/* NFL-Only Focus Banner */}
+        <div className="focus-banner">
+          <div className="banner-content">
+            <span className="banner-icon">🏈</span>
+            <div className="banner-text">
+              <strong>NFL-Only Focus:</strong> Following research-aligned best practices -
+              mastering one sport before expanding. NBA/NHL will be added after NFL edge is validated
+              (1,000+ settled bets, 3%+ ROI, positive CLV).
+            </div>
+          </div>
         </div>
       </header>
 
@@ -426,57 +376,38 @@ export default function SignalsClient({ signals, filters, total, pages, sportCou
           font-family: var(--font-jetbrains), 'Fira Code', 'Monaco', monospace;
         }
 
-        /* Tabs */
-        .tabs {
-          display: flex;
-          gap: 0.5rem;
+        /* NFL Focus Banner */
+        .focus-banner {
+          margin-top: 1.5rem;
           padding-top: 1.5rem;
           border-top: 1px solid var(--border);
         }
 
-        .tab {
+        .banner-content {
           display: flex;
           align-items: center;
-          gap: 0.5rem;
-          padding: 0.75rem 1.25rem;
-          background: var(--bg-secondary);
-          border: 1px solid var(--border);
+          gap: 1rem;
+          padding: 1rem 1.25rem;
+          background: rgba(251, 191, 36, 0.1);
+          border: 1px solid rgba(251, 191, 36, 0.3);
           border-radius: 6px;
-          cursor: pointer;
-          transition: all 0.2s ease;
+        }
+
+        .banner-icon {
+          font-size: 1.5rem;
+          line-height: 1;
+        }
+
+        .banner-text {
+          flex: 1;
+          font-size: 0.9rem;
           color: var(--text-secondary);
+          line-height: 1.5;
         }
 
-        .tab:hover {
-          background: var(--bg-tertiary);
-          border-color: var(--accent);
-        }
-
-        .tab.active {
-          background: var(--accent-glow);
-          border-color: var(--accent);
-          color: var(--accent);
-        }
-
-        .tab-label {
+        .banner-text strong {
+          color: var(--text-primary);
           font-weight: 600;
-          font-size: 0.85rem;
-          letter-spacing: 0.05em;
-        }
-
-        .tab-count {
-          font-family: var(--font-jetbrains), 'JetBrains Mono', monospace;
-          font-size: 0.85rem;
-          padding: 0.15rem 0.5rem;
-          background: var(--bg-card);
-          border-radius: 4px;
-          border: 1px solid var(--border);
-        }
-
-        .tab.active .tab-count {
-          background: rgba(0, 255, 136, 0.15);
-          border-color: var(--accent);
-          color: var(--accent);
         }
 
         /* Table Container */

@@ -9,7 +9,7 @@ export default async function SignalsPage({
   searchParams: { league?: string; market?: string; minEdge?: string; page?: string };
 }) {
   const filters = {
-    league: searchParams.league,
+    league: 'nfl', // NFL-only focus per research recommendations
     market: searchParams.market,
     minEdge: searchParams.minEdge ? parseFloat(searchParams.minEdge) : undefined,
     page: searchParams.page ? parseInt(searchParams.page) : 1,

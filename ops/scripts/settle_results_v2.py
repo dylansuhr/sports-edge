@@ -163,7 +163,9 @@ class SettlementProcessor:
         self,
         game_id: int,
         market_id: int,
-        sportsbook: str
+        sportsbook: str,
+        selection: Optional[str] = None,
+        line_value: Optional[float] = None
     ) -> Optional[int]:
         """
         Get closing line odds (last snapshot before game start, or up to 30min after).
@@ -177,13 +179,24 @@ class SettlementProcessor:
                 AND market_id = %s
                 AND sportsbook = %s
                 AND fetched_at <= (SELECT scheduled_at FROM games WHERE id = %s) + INTERVAL '30 minutes'
+                AND (selection = %s OR (%s IS NULL AND selection IS NULL))
+                AND (line_value = %s OR (%s IS NULL AND line_value IS NULL))
             ORDER BY fetched_at DESC
             LIMIT 1
         """
 
         with self.db.get_connection() as conn:
             with conn.cursor() as cur:
-                cur.execute(sql, (game_id, market_id, sportsbook, game_id))
+                cur.execute(sql, (
+                    game_id,
+                    market_id,
+                    sportsbook,
+                    game_id,
+                    selection,
+                    selection,
+                    line_value,
+                    line_value
+                ))
                 row = cur.fetchone()
 
                 if row:
@@ -195,7 +208,9 @@ class SettlementProcessor:
         self,
         bet: Dict,
         home_score: int,
-        away_score: int
+        away_score: int,
+        home_team_name: str,
+        away_team_name: str
     ) -> str:
         """
         Determine if bet won, lost, or pushed.
@@ -208,45 +223,73 @@ class SettlementProcessor:
         Returns:
             'win', 'loss', 'push', or 'void'
         """
-        market_name = bet['market_name']
+        market_name = (bet.get('market_name') or '').lower()
         line_value = safe_float(bet.get('line_value'))
+        selection_raw = bet.get('selection')
+        selection = (selection_raw or '').lower()
 
-        if market_name == 'spread':
+        if not selection:
+            return 'void'
+
+        if 'spread' in market_name or 'handicap' in market_name:
             if line_value is None:
                 return 'void'
 
-            # Assuming home team was bet (would need actual bet selection in production)
-            adjusted_margin = (home_score - away_score) + line_value
+            is_home_selection = home_team_name.lower() in selection
+            is_away_selection = away_team_name.lower() in selection
+
+            if not (is_home_selection or is_away_selection):
+                return 'void'
+
+            margin = home_score - away_score
+
+            if is_home_selection:
+                adjusted_margin = margin + line_value
+            else:
+                adjusted_margin = -margin + line_value  # Away spread perspective
 
             if adjusted_margin > 0:
                 return 'win'
-            elif adjusted_margin < 0:
+            if adjusted_margin < 0:
                 return 'loss'
-            else:
-                return 'push'
+            return 'push'
 
-        elif market_name == 'total':
+        elif 'total' in market_name or 'over' in selection or 'under' in selection:
             if line_value is None:
                 return 'void'
 
             total_points = home_score + away_score
 
-            # Assuming "over" was bet (would need actual bet selection)
-            if total_points > line_value:
-                return 'win'
-            elif total_points < line_value:
-                return 'loss'
-            else:
+            if 'over' in selection:
+                if total_points > line_value:
+                    return 'win'
+                if total_points < line_value:
+                    return 'loss'
                 return 'push'
+            elif 'under' in selection:
+                if total_points < line_value:
+                    return 'win'
+                if total_points > line_value:
+                    return 'loss'
+                return 'push'
+            else:
+                return 'void'
 
-        elif market_name == 'moneyline':
-            # Assuming home team was bet (would need actual bet selection)
-            if home_score > away_score:
-                return 'win'
-            elif home_score < away_score:
-                return 'loss'
-            else:
+        elif 'moneyline' in market_name or 'h2h' in market_name:
+            if home_team_name.lower() in selection:
+                if home_score > away_score:
+                    return 'win'
+                if home_score < away_score:
+                    return 'loss'
                 return 'push'
+            elif away_team_name.lower() in selection:
+                if away_score > home_score:
+                    return 'win'
+                if away_score < home_score:
+                    return 'loss'
+                return 'push'
+            else:
+                return 'void'
 
         else:
             return 'void'
@@ -255,7 +298,11 @@ class SettlementProcessor:
         self,
         game_id: int,
         home_score: int,
-        away_score: int
+        away_score: int,
+        home_team_name: str,
+        away_team_name: str,
+        home_team_id: Optional[int] = None,
+        away_team_id: Optional[int] = None
     ) -> Dict:
         """
         Settle all open bets for a completed game.
@@ -272,6 +319,7 @@ class SettlementProcessor:
                 b.odds_american,
                 b.stake_amount,
                 b.line_value,
+                b.selection,
                 m.name as market_name
             FROM bets b
             JOIN markets m ON b.market_id = m.id
@@ -290,7 +338,13 @@ class SettlementProcessor:
         for bet in bets:
             try:
                 # Determine outcome
-                outcome = self.determine_bet_outcome(bet, home_score, away_score)
+                outcome = self.determine_bet_outcome(
+                    bet,
+                    home_score,
+                    away_score,
+                    home_team_name,
+                    away_team_name
+                )
 
                 # Calculate P&L
                 if outcome == 'win':
@@ -307,7 +361,9 @@ class SettlementProcessor:
                 close_odds = self.get_closing_line(
                     bet['game_id'],
                     bet['market_id'],
-                    bet['sportsbook']
+                    bet['sportsbook'],
+                    bet.get('selection'),
+                    bet.get('line_value')
                 )
 
                 clv_pct = None
@@ -435,11 +491,11 @@ class SettlementProcessor:
             results = fetch_results(league, days_from=days_back)
         except Exception as e:
             print(f"[Settlement] Error fetching results: {e}")
-            return {'games_updated': 0, 'bets_settled': 0, 'avg_clv': 0.0}
+            return {'games_updated': 0, 'bets_settled': 0, 'wins': 0, 'losses': 0, 'pushes': 0, 'avg_clv': 0.0}
 
         if not results:
             print(f"[Settlement] No completed games found")
-            return {'games_updated': 0, 'bets_settled': 0, 'avg_clv': 0.0}
+            return {'games_updated': 0, 'bets_settled': 0, 'wins': 0, 'losses': 0, 'pushes': 0, 'avg_clv': 0.0}
 
         print(f"[Settlement] Found {len(results)} completed games")
 
@@ -490,7 +546,11 @@ class SettlementProcessor:
                     bet_stats = self.settle_bets_for_game(
                         game['game_id'],
                         result['final_home'],
-                        result['final_away']
+                        result['final_away'],
+                        game['home_team'],
+                        game['away_team'],
+                        game.get('home_team_id'),
+                        game.get('away_team_id')
                     )
 
                     total_bets_settled += bet_stats['settled']
