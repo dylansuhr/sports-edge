@@ -64,9 +64,22 @@ def check_feature_implemented(feature_name: str) -> bool:
     Check if a feature is implemented by looking for marker in database or files.
     """
     if feature_name == 'line_shopping':
-        # Check if line shopping logic exists in signals table
-        # For now, return False - will be True after implementation
-        # TODO: Update this after implementing line shopping
+        db = get_db()
+        try:
+            with db.get_connection() as conn:
+                with conn.cursor() as cur:
+                    cur.execute("""
+                        SELECT COUNT(*)
+                        FROM signals
+                        WHERE odds_improvement_pct IS NOT NULL
+                          AND odds_improvement_pct > 0
+                          AND created_at > NOW() - INTERVAL '14 days'
+                    """)
+                    count = cur.fetchone()[0]
+                    if count > 0:
+                        return True
+        except Exception:
+            return False
         return False
 
     elif feature_name == 'backtesting':

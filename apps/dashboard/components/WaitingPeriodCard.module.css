@@ -1,0 +1,211 @@
+.card {
+  background: var(--card-bg, #1a1a1a);
+  border: 1px solid var(--border-color, #333);
+  border-radius: 8px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.icon {
+  font-size: 32px;
+  line-height: 1;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary, #fff);
+  margin: 0 0 4px 0;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: var(--text-secondary, #888);
+  margin: 0;
+}
+
+/* Timeline Section */
+.timeline {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color, #333);
+  border-radius: 6px;
+  padding: 16px;
+  margin-bottom: 24px;
+}
+
+.timelineHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.dayCounter {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--accent-cyan, #00d4ff);
+}
+
+.percentage {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary, #888);
+}
+
+.progressBar {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-cyan, #00d4ff), var(--accent-blue, #0088ff));
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+.timelineFooter {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--text-tertiary, #666);
+}
+
+/* Metrics Section */
+.metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.metric {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-color, #333);
+  border-radius: 6px;
+  padding: 12px;
+}
+
+.metricHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.metricLabel {
+  font-size: 13px;
+  color: var(--text-secondary, #888);
+  font-weight: 500;
+}
+
+.metricValue {
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.metricValue.met {
+  color: var(--success, #00ff88);
+}
+
+.metricValue.notMet {
+  color: var(--text-primary, #fff);
+}
+
+.metricBar {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.metricFill {
+  height: 100%;
+  background: var(--accent-cyan, #00d4ff);
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+.metricFill.success {
+  background: var(--success, #00ff88);
+}
+
+.metricNote {
+  font-size: 11px;
+  color: var(--text-tertiary, #666);
+}
+
+/* Action Box */
+.actionBox {
+  background: rgba(0, 212, 255, 0.05);
+  border: 1px solid var(--accent-cyan, #00d4ff);
+  border-radius: 6px;
+  padding: 16px;
+}
+
+.actionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.actionTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary, #fff);
+  margin: 0;
+}
+
+.badge {
+  background: var(--accent-cyan, #00d4ff);
+  color: #000;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}
+
+.actionDescription {
+  font-size: 14px;
+  color: var(--text-secondary, #888);
+  margin: 0 0 12px 0;
+  line-height: 1.5;
+}
+
+.actionList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.actionList li {
+  font-size: 13px;
+  color: var(--text-secondary, #888);
+  padding-left: 20px;
+  position: relative;
+  line-height: 1.4;
+}
+
+.actionList li::before {
+  content: '•';
+  position: absolute;
+  left: 8px;
+  color: var(--accent-cyan, #00d4ff);
+}

@@ -194,3 +194,131 @@ export async function getSportExpansionMilestones(): Promise<Milestone[]> {
     days_remaining: row.days_remaining
   }));
 }
+
+// New function for timeline data
+export interface TimelineData {
+  paperBetsSettled: number;
+  roiPct: number;
+  clvPct: number;
+  winRate: number;
+  avgClv: number;
+  targetBets: number;
+  targetRoi: number;
+  targetClv: number;
+  betsPerDay: number;
+  daysElapsed: number;
+  estimatedDaysRemaining: number;
+  startDate: string;
+  lineShoppingImplemented: boolean;
+  backtestingCompleted: boolean;
+}
+
+export async function getTimelineData(): Promise<TimelineData> {
+  // Get paper betting stats
+  const paperBankroll = await sql`
+    SELECT
+      balance,
+      roi_percent,
+      win_rate,
+      avg_clv,
+      updated_at
+    FROM paper_bankroll
+    ORDER BY updated_at DESC
+    LIMIT 1
+  `;
+
+  const paperBetsCount = await sql`
+    SELECT COUNT(*) as count
+    FROM paper_bets
+    WHERE status = 'settled'
+  `;
+
+  // Calculate bets per day
+  const betsPerDay = await sql`
+    SELECT
+      COUNT(*) as total_bets,
+      EXTRACT(DAY FROM (MAX(settled_at) - MIN(placed_at))) as days_span
+    FROM paper_bets
+    WHERE status = 'settled'
+    AND placed_at IS NOT NULL
+    AND settled_at IS NOT NULL
+  `;
+
+  // Get earliest paper bet date as start date
+  const startDateQuery = await sql`
+    SELECT MIN(placed_at) as start_date
+    FROM paper_bets
+    WHERE placed_at IS NOT NULL
+  `;
+
+  // Check if line shopping implemented
+  // First check if column exists
+  const columnCheck = await sql`
+    SELECT EXISTS (
+      SELECT FROM information_schema.columns
+      WHERE table_name = 'signals'
+      AND column_name = 'odds_improvement_pct'
+    ) as column_exists
+  `;
+
+  let lineShoppingImplemented = false;
+
+  if (columnCheck[0]?.column_exists) {
+    const lineShoppingCheck = await sql`
+      SELECT COUNT(*) as count
+      FROM signals
+      WHERE odds_improvement_pct IS NOT NULL
+      AND odds_improvement_pct > 0
+      AND created_at > NOW() - INTERVAL '14 days'
+    `;
+    lineShoppingImplemented = Number(lineShoppingCheck[0]?.count || 0) > 0;
+  }
+
+  // Check if backtesting completed
+  const backtestingCheck = await sql`
+    SELECT EXISTS (
+      SELECT FROM information_schema.tables
+      WHERE table_name = 'backtest_results'
+    ) as table_exists
+  `;
+
+  const paperBetsSettled = Number(paperBetsCount[0]?.count || 0);
+  const targetBets = 1000;
+  const targetRoi = 3.0;
+  const targetClv = 1.0;
+
+  const roiPct = Number(paperBankroll[0]?.roi_percent || 0);
+  const winRate = Number(paperBankroll[0]?.win_rate || 0);
+  const avgClv = Number(paperBankroll[0]?.avg_clv || 0);
+
+  const totalBets = Number(betsPerDay[0]?.total_bets || 0);
+  const daysSpan = Number(betsPerDay[0]?.days_span || 1);
+  const calculatedBetsPerDay = totalBets > 0 && daysSpan > 0 ? totalBets / daysSpan : 5;
+
+  const startDate = startDateQuery[0]?.start_date || new Date().toISOString();
+  const daysElapsed = Math.floor(
+    (new Date().getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24)
+  );
+
+  const betsRemaining = Math.max(0, targetBets - paperBetsSettled);
+  const estimatedDaysRemaining = Math.ceil(betsRemaining / calculatedBetsPerDay);
+
+  const backtestingCompleted = backtestingCheck[0]?.table_exists || false;
+
+  return {
+    paperBetsSettled,
+    roiPct,
+    clvPct: avgClv,
+    winRate,
+    avgClv,
+    targetBets,
+    targetRoi,
+    targetClv,
+    betsPerDay: calculatedBetsPerDay,
+    daysElapsed,
+    estimatedDaysRemaining,
+    startDate,
+    lineShoppingImplemented,
+    backtestingCompleted
+  };
+}

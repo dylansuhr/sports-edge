@@ -252,7 +252,8 @@ class Database:
         line_value: float = None,
         player_id: int = None,
         raw_implied_probability: float = None,
-        selection: str = None
+        selection: str = None,
+        odds_improvement_pct: float = None
     ) -> int:
         """Insert or update a betting signal (upsert to handle duplicates)."""
         def _insert():
@@ -264,9 +265,9 @@ class Database:
                             line_value, selection, odds_american, fair_probability,
                             implied_probability, raw_implied_probability, edge_percent, kelly_fraction,
                             recommended_stake_pct, confidence_level,
-                            model_version, expires_at
+                            model_version, expires_at, odds_improvement_pct
                         )
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                         ON CONFLICT (game_id, market_id, odds_american, sportsbook)
                         WHERE status = 'active'
                         DO UPDATE SET
@@ -280,6 +281,7 @@ class Database:
                             confidence_level = EXCLUDED.confidence_level,
                             model_version = EXCLUDED.model_version,
                             expires_at = EXCLUDED.expires_at,
+                            odds_improvement_pct = EXCLUDED.odds_improvement_pct,
                             generated_at = CURRENT_TIMESTAMP
                         RETURNING id
                     """, (
@@ -287,7 +289,7 @@ class Database:
                         line_value, selection, odds_american, fair_probability,
                         implied_probability, raw_implied_probability, edge_percent, kelly_fraction,
                         recommended_stake_pct, confidence_level,
-                        model_version, expires_at
+                        model_version, expires_at, odds_improvement_pct
                     ))
                     return cur.fetchone()[0]
 

@@ -1,0 +1,140 @@
+.container {
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 32px;
+}
+
+.title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-primary, #fff);
+  margin: 0 0 4px 0;
+  letter-spacing: -0.5px;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: var(--text-secondary, #888);
+  margin: 0;
+}
+
+/* Sections */
+.section {
+  margin-bottom: 32px;
+}
+
+.sectionTitle {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary, #fff);
+  margin: 0 0 16px 0;
+  letter-spacing: -0.3px;
+}
+
+/* Link Grid */
+.linkGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.linkCard {
+  display: flex;
+  gap: 16px;
+  padding: 20px;
+  background: var(--card-bg, #1a1a1a);
+  border: 1px solid var(--border-color, #333);
+  border-radius: 8px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.linkCard:hover {
+  border-color: var(--accent-cyan, #00d4ff);
+  background: rgba(0, 212, 255, 0.05);
+  transform: translateY(-2px);
+}
+
+.linkIcon {
+  font-size: 32px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.linkContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.linkTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary, #fff);
+  margin: 0 0 4px 0;
+}
+
+.linkDescription {
+  font-size: 13px;
+  color: var(--text-secondary, #888);
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Footer */
+.footer {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-color, #333);
+  border-radius: 8px;
+  margin-top: 32px;
+}
+
+.footerItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.footerLabel {
+  font-size: 11px;
+  color: var(--text-tertiary, #666);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.footerValue {
+  font-size: 13px;
+  color: var(--text-primary, #fff);
+  font-weight: 500;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .container {
+    padding: 16px;
+  }
+
+  .title {
+    font-size: 24px;
+  }
+
+  .linkGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .footer {
+    flex-direction: column;
+    gap: 16px;
+  }
+}

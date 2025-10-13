@@ -55,6 +55,10 @@ migrate:
 	@psql "$$DATABASE_URL" -f infra/migrations/0006_add_signal_clv_tracking.sql || (echo "❌ Migration 0006 failed" && exit 1)
 	@echo "Running 0013_add_milestones.sql..."
 	@psql "$$DATABASE_URL" -f infra/migrations/0013_add_milestones.sql || (echo "❌ Migration 0013 failed" && exit 1)
+	@echo "Running 0014_add_selection_columns.sql..."
+	@psql "$$DATABASE_URL" -f infra/migrations/0014_add_selection_columns.sql || (echo "❌ Migration 0014 failed" && exit 1)
+	@echo "Running 0015_add_line_shopping_metrics.sql..."
+	@psql "$$DATABASE_URL" -f infra/migrations/0015_add_line_shopping_metrics.sql || (echo "❌ Migration 0015 failed" && exit 1)
 	@echo "✅ All migrations successful"
 
 db-ping:

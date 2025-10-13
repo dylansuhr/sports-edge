@@ -1,11 +1,25 @@
 import Link from 'next/link';
 import { getDashboardKPIs, getRecentStats } from '@/actions/kpis';
+import { getTimelineData } from '@/actions/milestones';
+import SystemModeIndicator from '@/components/SystemModeIndicator';
+import AutomationStatus from '@/components/AutomationStatus';
 
 export const dynamic = 'force-dynamic';
 
 export default async function Home() {
-  const kpis = await getDashboardKPIs();
-  const stats = await getRecentStats();
+  const [kpis, stats, timelineData] = await Promise.all([
+    getDashboardKPIs(),
+    getRecentStats(),
+    getTimelineData()
+  ]);
+
+  // Calculate days until action needed
+  const betsRemaining = Math.max(0, timelineData.targetBets - timelineData.paperBetsSettled);
+  const daysUntilAction = Math.ceil(betsRemaining / timelineData.betsPerDay);
+
+  // Determine if action is needed now
+  const actionNeeded = timelineData.paperBetsSettled >= timelineData.targetBets &&
+                       !timelineData.backtestingCompleted;
 
   return (
     <main style={{ padding: '24px', maxWidth: '1400px', margin: '0 auto' }}>
@@ -24,6 +38,34 @@ export default async function Home() {
       }}>
         Autonomous sports betting research platform - signals only, human-in-the-loop decision making
       </p>
+
+      {/* System Mode Indicator */}
+      <SystemModeIndicator
+        paperBetsSettled={timelineData.paperBetsSettled}
+        targetBets={timelineData.targetBets}
+        roiPct={timelineData.roiPct}
+        targetRoi={timelineData.targetRoi}
+        clvPct={timelineData.clvPct}
+        targetClv={timelineData.targetClv}
+        backtestingCompleted={timelineData.backtestingCompleted}
+        daysUntilAction={daysUntilAction}
+        actionNeeded={actionNeeded}
+      />
+
+      {/* Automation Status */}
+      <div style={{ marginBottom: '32px' }}>
+        <h2 style={{
+          fontFamily: 'monospace',
+          fontSize: '18px',
+          fontWeight: 700,
+          marginBottom: '16px',
+          letterSpacing: '0.05em',
+          textTransform: 'uppercase'
+        }}>
+          Automation Status
+        </h2>
+        <AutomationStatus />
+      </div>
 
       {/* KPI Cards */}
       <div style={{
@@ -326,6 +368,42 @@ export default async function Home() {
           cursor: 'pointer'
         }}>
           💰 My Bets
+        </Link>
+        <Link href="/progress" style={{
+          padding: '20px',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          borderRadius: '8px',
+          background: 'rgba(0, 0, 0, 0.3)',
+          backdropFilter: 'blur(10px)',
+          textDecoration: 'none',
+          color: '#ffffff',
+          fontFamily: 'monospace',
+          fontWeight: 500,
+          fontSize: '14px',
+          textTransform: 'uppercase',
+          letterSpacing: '0.05em',
+          transition: 'all 0.2s',
+          cursor: 'pointer'
+        }}>
+          🎯 Progress
+        </Link>
+        <Link href="/analytics" style={{
+          padding: '20px',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          borderRadius: '8px',
+          background: 'rgba(0, 0, 0, 0.3)',
+          backdropFilter: 'blur(10px)',
+          textDecoration: 'none',
+          color: '#ffffff',
+          fontFamily: 'monospace',
+          fontWeight: 500,
+          fontSize: '14px',
+          textTransform: 'uppercase',
+          letterSpacing: '0.05em',
+          transition: 'all 0.2s',
+          cursor: 'pointer'
+        }}>
+          🔬 Analytics
         </Link>
       </div>
     </main>

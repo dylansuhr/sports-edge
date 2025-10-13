@@ -505,8 +505,12 @@ class SignalGeneratorV2:
             # Select best odds from all available sportsbooks (LINE SHOPPING)
             odds_list_sorted = sorted(odds_list, key=lambda x: float(x['odds_decimal']), reverse=True)
             best_odds = odds_list_sorted[0]  # Highest decimal = best value
-            avg_odds = sum(float(o['odds_decimal']) for o in odds_list) / len(odds_list)
-            odds_improvement_pct = ((float(best_odds['odds_decimal']) - avg_odds) / avg_odds) * 100
+            books_compared = len(odds_list_sorted)
+            avg_odds = sum(float(o['odds_decimal']) for o in odds_list_sorted) / books_compared if books_compared else float(best_odds['odds_decimal'])
+            if books_compared > 1 and avg_odds:
+                odds_improvement_pct = ((float(best_odds['odds_decimal']) - avg_odds) / avg_odds) * 100
+            else:
+                odds_improvement_pct = 0.0
 
             # Use best odds for signal
             market_name = best_odds['market_name']
@@ -515,7 +519,7 @@ class SignalGeneratorV2:
 
             # Log line shopping benefit if significant
             if odds_improvement_pct > 0.5:
-                print(f"[LineShop]    {selection}: Best={sportsbook} ({odds_improvement_pct:.1f}% better than avg across {len(odds_list)} books)")
+                print(f"[LineShop]    {selection}: Best={sportsbook} ({odds_improvement_pct:.1f}% better than avg across {books_compared} books)")
 
             # Log market if first time seeing it
             market_key = (market_id, market_name)
@@ -610,7 +614,8 @@ class SignalGeneratorV2:
                 'recommended_stake_pct': round(stake_pct, 2),
                 'confidence_level': confidence,
                 'expires_at': expiry_time,
-                'kelly_fraction': self.config['kelly_fraction']
+                'kelly_fraction': self.config['kelly_fraction'],
+                'odds_improvement_pct': round(odds_improvement_pct, 2)
             }
 
             signals.append(signal)
@@ -637,7 +642,8 @@ class SignalGeneratorV2:
             model_version=self.config['model_version'],
             expires_at=signal['expires_at'],
             line_value=signal.get('line_value'),
-            selection=signal.get('selection')
+            selection=signal.get('selection'),
+            odds_improvement_pct=signal.get('odds_improvement_pct')
         )
 
     def send_slack_notification(self, signals: List[Dict]):
