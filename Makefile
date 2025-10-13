@@ -1,4 +1,4 @@
-.PHONY: help verify install clean test etl signals settle dashboard migrate db-ping clv clv-report
+.PHONY: help verify install clean test etl signals settle dashboard migrate db-ping clv clv-report milestone-check
 
 # Use python3 by default (macOS/Linux standard)
 PYTHON := python3
@@ -17,11 +17,12 @@ help:
 	@echo "  make db-ping    - Test database connectivity"
 	@echo ""
 	@echo "Operations:"
-	@echo "  make etl        - Run odds ETL (API mode)"
-	@echo "  make signals    - Generate betting signals"
+	@echo "  make etl        - Run odds ETL (NFL only)"
+	@echo "  make signals    - Generate betting signals (NFL only)"
 	@echo "  make settle     - Settle bet results"
 	@echo "  make clv        - Capture closing lines (run before games start)"
 	@echo "  make clv-report - Generate CLV performance report"
+	@echo "  make milestone-check - Check milestone readiness"
 	@echo ""
 	@echo "Development:"
 	@echo "  make dashboard  - Start Next.js dashboard (dev mode)"
@@ -52,6 +53,8 @@ migrate:
 	@psql "$$DATABASE_URL" -f infra/migrations/0005_add_raw_implied_prob.sql || (echo "❌ Migration 0005 failed" && exit 1)
 	@echo "Running 0006_add_signal_clv_tracking.sql..."
 	@psql "$$DATABASE_URL" -f infra/migrations/0006_add_signal_clv_tracking.sql || (echo "❌ Migration 0006 failed" && exit 1)
+	@echo "Running 0013_add_milestones.sql..."
+	@psql "$$DATABASE_URL" -f infra/migrations/0013_add_milestones.sql || (echo "❌ Migration 0013 failed" && exit 1)
 	@echo "✅ All migrations successful"
 
 db-ping:
@@ -68,24 +71,28 @@ install:
 	@echo "✅ Node dependencies installed"
 
 etl:
-	@echo "📊 Running odds ETL..."
-	@$(PYTHON) ops/scripts/odds_etl_v2.py --leagues nfl,nba,nhl
+	@echo "📊 Running odds ETL (NFL only - single-sport focus)..."
+	@$(PYTHON) ops/scripts/odds_etl_v2.py --leagues nfl
 
 signals:
-	@echo "🎯 Generating signals..."
-	@$(PYTHON) ops/scripts/generate_signals_v2.py --leagues nfl,nba,nhl
+	@echo "🎯 Generating signals (NFL only - single-sport focus)..."
+	@$(PYTHON) ops/scripts/generate_signals_v2.py --leagues nfl
 
 settle:
 	@echo "💰 Settling bet results..."
 	@$(PYTHON) ops/scripts/settle_results_v2.py --league nfl --days 1
 
 clv:
-	@echo "📈 Capturing closing lines for CLV tracking..."
-	@$(PYTHON) ops/scripts/capture_closing_lines.py --leagues nfl,nba,nhl --minutes-ahead 30
+	@echo "📈 Capturing closing lines for CLV tracking (NFL only)..."
+	@$(PYTHON) ops/scripts/capture_closing_lines.py --leagues nfl --minutes-ahead 30
 
 clv-report:
 	@echo "📊 Generating CLV performance report..."
 	@$(PYTHON) ops/scripts/clv_report.py
+
+milestone-check:
+	@echo "🎯 Checking milestone readiness..."
+	@$(PYTHON) ops/scripts/check_milestone_readiness.py
 
 dashboard:
 	@echo "🚀 Starting dashboard..."

@@ -13,9 +13,17 @@ SportsEdge is an **AI-assisted sports betting research platform** with autonomou
 2. **Paper Betting** - AI autonomously places mock bets with $0 risk to validate the system
 3. **Human-in-the-loop** - Once validated, human reviews signals and places real bets manually
 
-**Key Principle:**
-- **Phase 1 (Current):** Generate signals → AI places paper bets → Track performance with zero risk
-- **Phase 2 (When validated):** Generate signals → Human reviews → Manual bet placement → Track results
+**Research-Aligned Approach (8.5/10 Alignment Score):**
+- Following best practices from profitable betting research
+- Single-sport focus (NFL) until edge is statistically validated
+- Paper betting for zero-risk validation before real money
+- Kelly Criterion + conservative sizing (1% max stake)
+- CLV tracking as primary performance metric
+
+**Current Phase: Phase 1A - Quick Wins & Validation**
+- **Now:** NFL-only focus, paper betting accumulation
+- **Next:** Line shopping implementation, historical backtesting
+- **Future:** Add NBA/NHL after NFL edge validated (6+ months)
 
 **No automated real-money betting** - Paper betting is mock-only for system validation.
 
@@ -37,16 +45,19 @@ SportsEdge is an **AI-assisted sports betting research platform** with autonomou
 
 ```bash
 # Daily operations (with venv activated)
-make etl         # Fetch latest odds (NFL, NBA, NHL)
+make etl         # Fetch latest odds (NFL only - single-sport focus)
 make signals     # Generate betting signals (14-day window, with vig removal)
 make dashboard   # Start dashboard (localhost:3000)
 make settle      # Settle completed games and update ELO
 make clv         # Capture closing lines (run 10-30 min before games)
 make clv-report  # Generate CLV performance report
 
-# Paper betting (NEW)
+# Paper betting
 .venv/bin/python ops/scripts/paper_bet_agent.py --strategy Conservative --max-bets 10
 .venv/bin/python ops/scripts/settle_paper_bets.py
+
+# Progress tracking
+make milestone-check  # Check milestone criteria status
 
 # Database
 make migrate     # Run migrations
@@ -64,7 +75,7 @@ make verify      # Verify system health
 - `DATABASE_READONLY_URL` - Read-only (dashboard)
 - `THE_ODDS_API_KEY` - From the-odds-api.com
 - `USE_API=true`
-- `LEAGUES=nfl,nba,nhl`
+- `LEAGUES=nfl` (single-sport focus per research recommendations)
 
 **Configuration:**
 - `SIGNAL_LOOKAHEAD_HOURS=336` (14 days)
@@ -76,7 +87,29 @@ make verify      # Verify system health
 
 ## Architecture Principles
 
-### 1. API-Only Data Flow
+### 1. Single-Sport Focus (Research-Aligned)
+
+**Current:** NFL only until edge is statistically validated
+**Rationale:** Research shows "focus on just one sport rather than betting on multiple"
+**Data Validates This:** 97.8% of signals were already NFL (834 of 853)
+
+**Benefits:**
+- Deep expertise in NFL betting markets
+- Better model calibration (more data concentration)
+- Reduced API quota usage (144 vs 432 credits/month)
+- Simpler decision-making and analysis
+
+**Sport Addition Criteria (Automated Milestone Detection):**
+- ✅ 1,000+ paper bets settled (NFL)
+- ✅ ROI > 3% sustained over 3+ months
+- ✅ CLV > 1% average
+- ✅ p-value < 0.01 (99% confidence)
+- ✅ Backtesting confirms edge
+- ✅ Line shopping implemented
+
+**Timeline:** Add NBA/NHL after 6-9 months when NFL edge is proven
+
+### 2. API-Only Data Flow
 
 ```
 The Odds API → ETL → Database → Signal Generation → Dashboard
@@ -86,11 +119,13 @@ The Odds API → ETL → Database → Signal Generation → Dashboard
                             Paper Bets → Settlement → ELO Updates
                                         ↓
                             Performance Feedback → Model Improvement
+                                        ↓
+                              Milestone Tracking → Sport Addition Alerts
 ```
 
 **No CSV fallbacks** - If API fails, log error and exit.
 
-### 2. Database Layer - Idempotent Operations
+### 3. Database Layer - Idempotent Operations
 
 All writes go through `packages/shared/shared/db.py`:
 - `upsert_team()`, `upsert_game()`, `upsert_market()` - Prevent duplicates
@@ -98,7 +133,25 @@ All writes go through `packages/shared/shared/db.py`:
 - `insert_signal()` - Write betting signals
 - Safe to re-run scripts without creating duplicates
 
-### 3. Signal Generation Flow
+### 4. Line Shopping (Priority 0 - Critical Research Gap)
+
+**Status:** ❌ Not implemented (CRITICAL for Week 1-2)
+**Impact:** +1-2% ROI improvement immediately
+
+**Current Behavior:** Uses first available odds from any sportsbook
+**Target Behavior:** Compare all 9 sportsbooks, select best decimal odds
+
+**Research Quote:** "Line shopping for best odds" is a core edge component
+
+**Implementation:**
+```python
+# Compare all books, return highest decimal odds
+def select_best_odds(game, market, selection):
+    all_odds = fetch_from_all_sportsbooks(game, market, selection)
+    return max(all_odds, key=lambda x: x['odds_decimal'])
+```
+
+### 5. Signal Generation Flow
 
 ```
 Odds → ELO Model → Fair Probability → Edge Calculation → Signal (if ≥ threshold)
@@ -111,13 +164,13 @@ Odds → ELO Model → Fair Probability → Edge Calculation → Signal (if ≥ 
 
 **Key Fix (Oct 8):** Each selection gets its own fair probability (was causing 40%+ edges, now 11%)
 
-### 4. Sport-Specific Risk Management
+### 6. Sport-Specific Risk Management
 
 - **NFL:** Signals expire 48h before game (injury volatility)
-- **NBA:** Signals expire 24h before game (lineup changes)
-- **NHL:** Signals expire 36h before game (balanced)
+- **NBA:** Signals expire 24h before game (lineup changes) - PAUSED until NFL validated
+- **NHL:** Signals expire 36h before game (balanced) - PAUSED until NFL validated
 
-### 5. ELO Rating System
+### 7. ELO Rating System
 
 - Initial: 1500
 - K-factor: 20
@@ -125,7 +178,7 @@ Odds → ELO Model → Fair Probability → Edge Calculation → Signal (if ≥ 
 - Updates after each settlement
 - Tracked in `elo_history` table
 
-### 6. Paper Betting System (AI-Powered Mock Betting)
+### 8. Paper Betting System (AI-Powered Mock Betting)
 
 **Purpose:** Validate system performance with $0 risk before placing real bets
 
@@ -156,28 +209,37 @@ Odds → ELO Model → Fair Probability → Edge Calculation → Signal (if ≥ 
 **Strategy:** Conservative (3% min edge, medium confidence, ¼-Kelly)
 **Goal:** Positive ROI + positive CLV = system is beating the market
 
-### 7. Automated Workflows (GitHub Actions)
+### 9. Automated Workflows (GitHub Actions)
 
 **Active Automation:**
-- **Odds ETL:** Every 15 minutes, 7 days/week (NFL, NBA, NHL)
-- **Signal Generation:** Every 20 minutes, 7 days/week (all sports)
-- **Paper Betting:** Every 30 minutes (AI places mock bets + settles completed) **NEW**
+- **Odds ETL:** Every 5 hours, 7 days/week (NFL only) - Optimized for 500 credit/month free tier
+- **Signal Generation:** Every 20 minutes, 7 days/week (NFL only)
+- **Paper Betting:** Every 30 minutes (AI places mock bets + settles completed)
 - **Settlement:** Daily at 2 AM ET (settles bets, updates ELO + team ratings)
 - **CLV Capture:** Every 30 minutes (closing lines before games start)
 - **Performance Analysis:** Sundays 9 AM ET (weekly analysis + auto-tuning recommendations)
+- **Milestone Checking:** Daily at 8 AM ET (checks readiness for phase advancement + sport addition)
+
+**API Quota Management:**
+- Free tier: 500 credits/month (The Odds API)
+- NFL-only schedule: 144 credits/month (356 credit buffer) - 67% reduction!
+- API usage tracked in `api_usage_log` table
+- Quota exhaustion alerts loudly (not silent failures)
 
 **Configuration:** Workflows in `.github/workflows/` use GitHub Secrets for credentials
 
-### 8. Dashboard UI
+### 10. Dashboard UI
 
 - **Framework:** Next.js 14 with CSS Modules, Recharts for visualization
 - **Pages:**
   - `/signals` - Sortable signal table with sport tabs, automation status timers
   - `/performance` - Model performance dashboard with line charts and readiness indicator
-  - `/paper-betting` - **NEW** AI paper betting dashboard with P&L tracking, decision log, performance charts
+  - `/progress` - **NEW** Milestone timeline with phase tracking and sport addition alerts
+  - `/paper-betting` - AI paper betting dashboard with P&L tracking, decision log, performance charts
   - `/bets` - Manual bet tracking (placeholder for future real-money bets)
 - **Features:**
   - Model Readiness Card: Visual status (Ready/Monitor/Not Ready/Insufficient Data)
+  - Milestone Timeline: Phase progress, criteria checklist, sport addition alerts
   - CLV Trend Chart: 30-day performance history
   - Beat Closing % Chart: Track market-beating percentage
   - Performance by Sport/Market: Bar charts showing segment-level CLV
@@ -286,19 +348,20 @@ claude/ROADMAP.md            # Detailed roadmap, current status, next steps
 
 ### ✅ What's Working (100% Operational)
 
-1. **Multi-Sport ETL** - NFL, NBA, NHL odds from The Odds API
+1. **NFL-Only ETL** - Single-sport focus per research recommendations (97.8% of signals were already NFL)
 2. **Per-Selection Fair Probabilities** - Each selection gets accurate probability
 3. **Vig Removal** - Multiplicative devigging (1.26% avg reduction)
 4. **Team-Specific Totals** - Exponential moving average offensive/defensive ratings
-5. **Signal Generation** - 800+ active signals with early-season filters
-6. **Sport-Specific Expiry** - Risk-aware signal lifetimes
+5. **Signal Generation** - 800+ active NFL signals with early-season filters
+6. **Sport-Specific Expiry** - Risk-aware signal lifetimes (48h for NFL)
 7. **CLV Tracking** - Closing line capture + performance analysis
 8. **Autonomous Learning** - Self-analyzing, self-tuning model
 9. **Performance Dashboard** - Visual readiness indicator + trend charts
 10. **ELO System** - Dynamic ratings that update on settlement
-11. **Paper Betting System** - AI autonomously places mock bets with $1,000 virtual bankroll
+11. **Paper Betting System** - AI autonomously places mock bets with $10,000 virtual bankroll
 12. **Game Time Display** - Shows game date/time in Eastern Time with day of week
 13. **Duplicate Prevention** - Unique index prevents duplicate signals at database level
+14. **Milestone Tracking** - Automated phase advancement detection + sport addition alerts
 
 ### ⚠️ Recent Fixes
 
@@ -423,13 +486,43 @@ claude/ROADMAP.md            # Detailed roadmap, current status, next steps
 
 ---
 
-## Next Steps (Phase 1 Enhancements)
+## Next Steps (Research-Aligned Roadmap)
 
-See `claude/ROADMAP.md` for full details. Top priorities:
+See `claude/ROADMAP.md` and `claude/RESEARCH_ALIGNMENT.md` for full details.
 
-1. **Vig Removal** - Implement paired vig removal (reduces edges 2-4%)
-2. **Team-Specific Total Models** - Replace league averages with team offensive/defensive ratings
-3. **Weather & Injury Integration** - Real-time data for NFL
+### **Phase 1A: Quick Wins & Validation** (Weeks 1-4) ← YOU ARE HERE
+
+**Week 1-2: Line Shopping** ⭐ CRITICAL
+- Implement best-odds selection across 9 sportsbooks
+- Expected impact: +1-2% ROI immediately
+
+**Week 3-4: Historical Backtesting** ⭐ CRITICAL
+- Validate edge on 2+ years historical data
+- Target: 1000+ bets, ROI >3%, p-value <0.01
+
+**Ongoing: Paper Betting Accumulation**
+- Target: 1,000+ settled bets by end of Month 3
+- Monitor: ROI, CLV, win rate
+
+### **Phase 1B: Model Refinement** (Months 2-3)
+- Weather & injury integration for NFL
+- Early-season validation
+
+### **Phase 2: ML Enhancement & Expansion** (Months 4-9)
+- ML model development (gradient boosting)
+- A/B testing vs ELO baseline
+- Props and college football exploration
+
+### **Phase 3: Real Money Deployment** (Months 10-12)
+- Only after "Validated Edge" milestone met
+- Multi-account strategy
+- Manual bet placement
+
+### **When to Add Sports:**
+**Automated detection** via milestone tracking system alerts when:
+- ✅ NFL edge validated (all 6 criteria met)
+- ✅ Appropriate season timing (NBA October, NHL October)
+- Dashboard shows: "🎉 Ready to add NBA"
 
 ---
 
