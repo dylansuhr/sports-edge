@@ -2,7 +2,7 @@
 
 import { neon } from '@neondatabase/serverless';
 
-const sql = neon(process.env.DATABASE_READONLY_URL!);
+const sql = neon(process.env.DATABASE_READONLY_URL || 'postgresql://dummy:dummy@localhost:5432/dummy');
 
 // Advanced Performance Tracking
 export interface AdvancedPerformanceMetrics {
