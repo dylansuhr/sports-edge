@@ -2,7 +2,7 @@ name: Capture Closing Lines
 
 on:
   schedule:
-    # Run every 30 minutes to catch games starting soon
+    # NFL-ONLY: Run every 30 minutes to catch closing lines (research-aligned single-sport focus)
     - cron: '*/30 * * * *'
   workflow_dispatch:
 
@@ -24,9 +24,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r packages/models/requirements.txt
 
-      - name: Capture closing lines
+      - name: Capture closing lines (NFL Only)
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           THE_ODDS_API_KEY: ${{ secrets.THE_ODDS_API_KEY }}
         run: |
-          python ops/scripts/capture_closing_lines.py --leagues nfl,nba,nhl --minutes-ahead 30
+          python ops/scripts/capture_closing_lines.py --leagues nfl --minutes-ahead 30

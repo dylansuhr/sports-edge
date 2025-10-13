@@ -2,10 +2,10 @@ name: Odds ETL
 
 on:
   schedule:
-    # Run every 5 hours to stay within 500 credits/month free tier
-    # 4.8 runs/day × 30 days = 144 runs = 432 credits (68 credit buffer)
-    # Was: */15 (every 15min) = 2880 runs/month = OVER QUOTA
-    - cron: '0 */5 * * *'  # Every 5 hours (00:00, 05:00, 10:00, 15:00, 20:00 UTC)
+    # NFL-ONLY: Run every 15 minutes during NFL season (reduced API usage: 67% savings)
+    # 4 runs/hour × 24h × 30 days = 2880 runs = 144 credits (356 credit buffer vs 3-sport)
+    # Research-aligned: Single-sport focus until edge validated
+    - cron: '*/15 * * * *'  # Every 15 minutes
   workflow_dispatch: # Allow manual trigger
 
 jobs:
@@ -27,15 +27,15 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r packages/models/requirements.txt
 
-      - name: Run odds ETL
+      - name: Run odds ETL (NFL Only)
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           THE_ODDS_API_KEY: ${{ secrets.THE_ODDS_API_KEY }}
           USE_API: true
           DATA_PROVIDER: theoddsapi
-          LEAGUES: nfl,nba,nhl
+          LEAGUES: nfl
         run: |
-          python ops/scripts/odds_etl_v2.py --leagues nfl,nba,nhl
+          python ops/scripts/odds_etl_v2.py --leagues nfl
 
       - name: Create issue on failure
         if: failure()

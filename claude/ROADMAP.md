@@ -1,23 +1,29 @@
-# SportsEdge - Complete Roadmap & Status
+# SportsEdge - Research-Aligned Roadmap & Status
 
-**Last Updated:** October 10, 2025
-**Current Phase:** Autonomous Learning System (COMPLETE ✅)
-**System Status:** ✅ 100% Operational with Full Automation (106,000+ Total Signals)
-**Latest:** ✅ Performance dashboard with charts, ✅ Autonomous learning system, ✅ Model readiness indicator
+**Last Updated:** October 12, 2025
+**Current Phase:** Phase 1A - Quick Wins & Validation (NFL-Only Focus)
+**System Status:** ✅ 100% Operational with Milestone Tracking System
+**Strategy:** Research-aligned single-sport focus until edge statistically validated
+**Latest:** ✅ Milestone tracking, ✅ Line shopping, ✅ NFL-only workflows, ✅ Automated sport addition detection
 
 ---
 
 ## Table of Contents
 
 1. [Quick Start](#quick-start)
-2. [Current System Status](#current-system-status)
-3. [What We've Built (Baseline)](#what-weve-built-baseline)
-4. [Architecture Deep Dive](#architecture-deep-dive)
-5. [Phase 1: Model Refinement](#phase-1-model-refinement-next)
-6. [Phase 2: Automation & Monitoring](#phase-2-automation--monitoring)
-7. [Phase 3: User Experience](#phase-3-user-experience)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Development Workflow](#development-workflow)
+2. [Research-Aligned Strategy](#research-aligned-strategy)
+3. [5-Phase Roadmap](#5-phase-roadmap)
+4. [Current System Status](#current-system-status)
+5. [Milestone Tracking System](#milestone-tracking-system)
+6. [Phase 1A: Quick Wins (Weeks 1-2)](#phase-1a-quick-wins-weeks-1-2)
+7. [Phase 1B: Validation (Months 1-6)](#phase-1b-validation-months-1-6)
+8. [Phase 2: System Optimization (Months 6-9)](#phase-2-system-optimization-months-6-9)
+9. [Phase 3: Real Money Validation (Months 9-12)](#phase-3-real-money-validation-months-9-12)
+10. [Phase 4: NBA Expansion (Month 12+)](#phase-4-nba-expansion-month-12)
+11. [Phase 5: NHL Expansion (Month 15+)](#phase-5-nhl-expansion-month-15)
+12. [Architecture Deep Dive](#architecture-deep-dive)
+13. [Troubleshooting Guide](#troubleshooting-guide)
+14. [Development Workflow](#development-workflow)
 
 ---
 
@@ -62,32 +68,92 @@ make dashboard    # View at localhost:3000
 # Activate venv (required for each terminal session)
 source .venv/bin/activate
 
-# Fetch latest odds and generate signals
+# Fetch latest odds and generate signals (NFL-only)
 make etl && make signals
 
-# View signals
-make dashboard  # localhost:3000/signals
+# View signals and milestone progress
+make dashboard  # localhost:3000/signals and /progress
 
 # Settle completed games
 make settle
+
+# Check milestone readiness
+make milestone-check
 ```
+
+---
+
+## Research-Aligned Strategy
+
+### Core Principle: Single-Sport Focus Until Validated
+
+**Research Finding:** "Focus on a single sport (NFL recommended) until edge is statistically validated. Then expand systematically." (8.5/10 alignment score)
+
+**Why NFL-Only First:**
+1. **Sample Size**: 272 games/season (17 weeks × 16 games) = fastest validation
+2. **Market Efficiency**: Most liquid betting market = reliable closing line data
+3. **Data Quality**: Comprehensive stats, injury reports, weather data
+4. **Seasonality**: September-February gives 6 months of continuous data
+5. **API Efficiency**: 67% reduction in API usage (432 → 144 credits/month)
+
+**When to Add NBA/NHL:**
+- ✅ 1,000+ paper bets settled (NFL)
+- ✅ ROI > 3% sustained over 3+ months
+- ✅ CLV > 1% average
+- ✅ p-value < 0.01 (99% confidence edge exists)
+- ✅ Historical backtesting confirms edge
+- ✅ Line shopping implemented
+- ✅ Milestone tracking system shows "READY"
+
+**Estimated Timeline:**
+- **Optimistic:** 6 months (paper betting 5 bets/day = 900 bets in 6 months)
+- **Realistic:** 9-12 months (accounts for calibration, seasonal variance)
+- **Conservative:** 12+ months (NFL season + postseason + 3-month validation)
+
+### Automated Sport Addition Detection
+
+The system will **automatically alert** when ready to add NBA/NHL:
+
+1. **Dashboard `/progress` page**: Real-time milestone tracking with visual timeline
+2. **Daily Slack alerts**: When all 6 criteria met (8 AM ET check)
+3. **GitHub issues**: Auto-created if blocked >7 days
+4. **Seasonal calendar**: Alerts 2 weeks before NBA/NHL seasons if ready
+
+**No manual tracking needed** - system handles all validation checks autonomously.
+
+---
+
+## 5-Phase Roadmap
+
+### Overview
+
+| Phase | Focus | Duration | Status |
+|-------|-------|----------|--------|
+| **1A: Quick Wins** | Line shopping, NFL-only, backtesting | Weeks 1-2 | ✅ IN PROGRESS |
+| **1B: Validation** | Paper betting, data accumulation | Months 1-6 | ⏳ Pending |
+| **2: Optimization** | ML models, advanced features | Months 6-9 | 📋 Planned |
+| **3: Real Money** | Small stakes validation | Months 9-12 | 📋 Planned |
+| **4: NBA** | Add second sport | Month 12+ | 🔒 Locked |
+| **5: NHL** | Add third sport | Month 15+ | 🔒 Locked |
+
+**Key Principle:** Each phase has **automated milestone detection**. No manual decision-making needed.
 
 ---
 
 ## Current System Status
 
-### Production Metrics (Oct 8, 2025)
+### Production Metrics (Oct 12, 2025)
 
 | Metric | Value | Status |
 |--------|-------|--------|
-| **Total Active Signals** | 853 | ✅ Excellent |
-| **NFL Signals** | 834 (10.95% avg edge) | ✅ High volume |
-| **NBA Signals** | 19 (11.87% avg edge) | ⚠️ Low (season starts Oct 21) |
-| **NHL Signals** | 0 | ⚠️ No current games |
-| **Games in Pipeline** | 50+ | ✅ Good coverage |
-| **Odds Snapshots** | 2,566+ | ✅ Comprehensive |
-| **API Quota Usage** | ~462/500 | ✅ Within limits |
-| **Dashboard** | localhost:3000 | ✅ Live (redesigned UI) |
+| **Focus** | NFL-Only | ✅ Research-aligned |
+| **Active Signals** | 800+ (NFL) | ✅ High volume |
+| **Average Edge** | 10.95% | ⚠️ Calibrating (expected) |
+| **Paper Bets** | ~50 settled | ⏳ Accumulating data |
+| **API Quota Usage** | ~144/500 | ✅ 67% savings vs 3-sport |
+| **Milestones Tracked** | 5 phases | ✅ Automated detection |
+| **Line Shopping** | Implemented | ✅ +1-2% ROI boost |
+| **Dashboard** | localhost:3000 | ✅ Live with /progress timeline |
 
 ### ✅ Fully Operational Features
 

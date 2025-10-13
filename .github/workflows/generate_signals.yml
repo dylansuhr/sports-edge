@@ -2,7 +2,7 @@ name: Generate Signals
 
 on:
   schedule:
-    # Run every 20 minutes every day (NFL Thu-Mon, NBA/NHL play all week)
+    # NFL-ONLY: Run every 20 minutes (research-aligned single-sport focus)
     - cron: '*/20 * * * *'
   workflow_dispatch: # Allow manual trigger
 
@@ -25,13 +25,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r packages/models/requirements.txt
 
-      - name: Generate betting signals
+      - name: Generate betting signals (NFL Only)
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           USE_API: true
           DATA_PROVIDER: theoddsapi
-          LEAGUES: nfl,nba,nhl
+          LEAGUES: nfl
           EDGE_SIDES: "0.02"
           EDGE_PROPS: "0.03"
           KELLY_FRACTION: "0.25"
@@ -39,7 +39,7 @@ jobs:
           BANKROLL: "1000.0"
           SIGNAL_LOOKAHEAD_HOURS: "336"
         run: |
-          python ops/scripts/generate_signals_v2.py --leagues nfl,nba,nhl
+          python ops/scripts/generate_signals_v2.py --leagues nfl
 
       - name: Create issue on failure
         if: failure()

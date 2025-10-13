@@ -29,6 +29,12 @@ export default function Navigation() {
             Performance
           </Link>
           <Link
+            href="/progress"
+            className={`${styles.link} ${isActive('/progress') ? styles.active : ''}`}
+          >
+            Progress
+          </Link>
+          <Link
             href="/paper-betting"
             className={`${styles.link} ${isActive('/paper-betting') ? styles.active : ''}`}
           >

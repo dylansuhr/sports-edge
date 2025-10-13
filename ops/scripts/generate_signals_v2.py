@@ -29,6 +29,7 @@ from shared.shared.odds_math import (
     american_to_decimal
 )
 from shared.shared.db import get_db
+from shared.shared.line_shopping import select_best_odds
 from models.models.features import NFLFeatureGenerator
 from models.models.prop_models import NFLGameLineModel, create_baseline_fair_odds
 
@@ -488,16 +489,33 @@ class SignalGeneratorV2:
         # Group by market for logging
         markets_seen = set()
 
-        # Process each individual odds snapshot (each represents a specific selection)
+        # Group odds by unique (market_id, selection) for line shopping
+        unique_selections = {}
         for odds in odds_snapshots:
-            market_id = odds['market_id']
-            market_name = odds['market_name']
-            selection = odds.get('selection')
-            sportsbook = odds['sportsbook']
+            key = (odds['market_id'], odds.get('selection'))
+            if key not in unique_selections:
+                unique_selections[key] = []
+            unique_selections[key].append(odds)
 
-            # Skip if no selection (old data)
+        # Process each unique selection (with line shopping across books)
+        for (market_id, selection), odds_list in unique_selections.items():
             if not selection:
                 continue
+
+            # Select best odds from all available sportsbooks (LINE SHOPPING)
+            odds_list_sorted = sorted(odds_list, key=lambda x: float(x['odds_decimal']), reverse=True)
+            best_odds = odds_list_sorted[0]  # Highest decimal = best value
+            avg_odds = sum(float(o['odds_decimal']) for o in odds_list) / len(odds_list)
+            odds_improvement_pct = ((float(best_odds['odds_decimal']) - avg_odds) / avg_odds) * 100
+
+            # Use best odds for signal
+            market_name = best_odds['market_name']
+            sportsbook = best_odds['sportsbook']
+            odds = best_odds
+
+            # Log line shopping benefit if significant
+            if odds_improvement_pct > 0.5:
+                print(f"[LineShop]    {selection}: Best={sportsbook} ({odds_improvement_pct:.1f}% better than avg across {len(odds_list)} books)")
 
             # Log market if first time seeing it
             market_key = (market_id, market_name)
