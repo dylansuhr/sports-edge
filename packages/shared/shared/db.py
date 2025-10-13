@@ -251,7 +251,8 @@ class Database:
         expires_at: str,
         line_value: float = None,
         player_id: int = None,
-        raw_implied_probability: float = None
+        raw_implied_probability: float = None,
+        selection: str = None
     ) -> int:
         """Insert or update a betting signal (upsert to handle duplicates)."""
         def _insert():
@@ -260,18 +261,19 @@ class Database:
                     cur.execute("""
                         INSERT INTO signals (
                             game_id, player_id, market_id, sportsbook,
-                            line_value, odds_american, fair_probability,
+                            line_value, selection, odds_american, fair_probability,
                             implied_probability, raw_implied_probability, edge_percent, kelly_fraction,
                             recommended_stake_pct, confidence_level,
                             model_version, expires_at
                         )
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                         ON CONFLICT (game_id, market_id, odds_american, sportsbook)
                         WHERE status = 'active'
                         DO UPDATE SET
                             fair_probability = EXCLUDED.fair_probability,
                             implied_probability = EXCLUDED.implied_probability,
                             raw_implied_probability = EXCLUDED.raw_implied_probability,
+                            selection = EXCLUDED.selection,
                             edge_percent = EXCLUDED.edge_percent,
                             kelly_fraction = EXCLUDED.kelly_fraction,
                             recommended_stake_pct = EXCLUDED.recommended_stake_pct,
@@ -282,7 +284,7 @@ class Database:
                         RETURNING id
                     """, (
                         game_id, player_id, market_id, sportsbook,
-                        line_value, odds_american, fair_probability,
+                        line_value, selection, odds_american, fair_probability,
                         implied_probability, raw_implied_probability, edge_percent, kelly_fraction,
                         recommended_stake_pct, confidence_level,
                         model_version, expires_at

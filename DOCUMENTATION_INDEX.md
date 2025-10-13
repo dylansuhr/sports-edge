@@ -1,6 +1,6 @@
 # SportsEdge - Documentation Index
 
-**Last Updated:** October 10, 2025
+**Last Updated:** October 12, 2025
 
 ---
 
@@ -173,14 +173,15 @@ The following files have been **removed** to reduce clutter (content merged into
 
 ## 🎯 Current Status Summary
 
-**System:** Production-ready with Phase 1 enhancements (105,676 total signals)
+**System:** Production-ready with research-aligned NFL-only focus
+**Phase:** Phase 1A - Quick Wins & Validation (✅ Line shopping complete)
 **Documentation:** ✅ Complete and consolidated
 **Code Quality:** ✅ Clean, modular, minimal technical debt
-**Recent Enhancements:** ✅ Vig removal, ✅ CLV tracking, ✅ Team-specific total models (code)
-**Next Phase:** Integration of team models, market efficiency filters, line shopping
+**Recent Enhancements:** ✅ Line shopping (+1-2% ROI), ✅ Milestone tracking, ✅ NFL-only workflows
+**Next Phase:** Historical backtesting, continued paper betting accumulation
 
 ---
 
-**Document Version:** 1.1
-**Last Updated:** October 10, 2025
+**Document Version:** 1.2
+**Last Updated:** October 12, 2025
 **Maintained by:** Dylan Suhr

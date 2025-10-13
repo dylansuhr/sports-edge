@@ -81,6 +81,7 @@ CREATE TABLE IF NOT EXISTS odds_snapshots (
     market_id INTEGER REFERENCES markets(id),
     sportsbook VARCHAR(50) NOT NULL, -- draftkings, caesars, etc.
     line_value DECIMAL(10, 2), -- spread/total line (e.g., -3.5, 45.5)
+    selection VARCHAR(150),
     odds_american INTEGER, -- American odds (e.g., -110, +150)
     odds_decimal DECIMAL(10, 3), -- Decimal odds (e.g., 1.909, 2.500)
     implied_probability DECIMAL(5, 4), -- e.g., 0.5238
@@ -103,6 +104,7 @@ CREATE TABLE IF NOT EXISTS signals (
     market_id INTEGER REFERENCES markets(id),
     sportsbook VARCHAR(50) NOT NULL,
     line_value DECIMAL(10, 2),
+    selection VARCHAR(150),
     odds_american INTEGER,
     fair_probability DECIMAL(5, 4), -- model-estimated true probability
     implied_probability DECIMAL(5, 4), -- book's implied probability
@@ -132,6 +134,7 @@ CREATE TABLE IF NOT EXISTS bets (
     market_id INTEGER REFERENCES markets(id),
     sportsbook VARCHAR(50) NOT NULL,
     line_value DECIMAL(10, 2),
+    selection VARCHAR(150),
     odds_american INTEGER,
     stake_amount DECIMAL(10, 2), -- in dollars
     placed_at TIMESTAMP NOT NULL,

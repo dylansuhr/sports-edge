@@ -121,15 +121,18 @@ class PaperBettingAgent:
                 t_away.name as away_team,
                 m.name as market_name,
                 p.name as player_name,
-                (
-                    SELECT o2.selection
-                    FROM odds_snapshots o2
-                    WHERE o2.game_id = s.game_id
-                      AND o2.market_id = s.market_id
-                      AND o2.sportsbook = s.sportsbook
-                      AND o2.odds_american = s.odds_american
-                    ORDER BY o2.fetched_at DESC
-                    LIMIT 1
+                COALESCE(
+                    s.selection,
+                    (
+                        SELECT o2.selection
+                        FROM odds_snapshots o2
+                        WHERE o2.game_id = s.game_id
+                          AND o2.market_id = s.market_id
+                          AND o2.sportsbook = s.sportsbook
+                          AND o2.odds_american = s.odds_american
+                        ORDER BY o2.fetched_at DESC
+                        LIMIT 1
+                    )
                 ) as selection
             FROM signals s
             JOIN games g ON s.game_id = g.id

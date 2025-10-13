@@ -72,7 +72,7 @@ class PaperBetSettlement:
             LEFT JOIN teams t_home ON g.home_team_id = t_home.id
             LEFT JOIN teams t_away ON g.away_team_id = t_away.id
             WHERE pb.status = 'pending'
-              AND g.status = 'completed'
+              AND g.status IN ('final', 'completed', 'closed')
               AND g.home_score IS NOT NULL
               AND g.away_score IS NOT NULL
         """
@@ -193,6 +193,7 @@ class PaperBetSettlement:
             bet['market_id'],
             bet['signal_id'],
             bet['selection'],
+            bet['scheduled_at'],
             bet['scheduled_at']
         ])
 

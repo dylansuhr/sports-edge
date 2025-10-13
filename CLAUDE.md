@@ -133,23 +133,28 @@ All writes go through `packages/shared/shared/db.py`:
 - `insert_signal()` - Write betting signals
 - Safe to re-run scripts without creating duplicates
 
-### 4. Line Shopping (Priority 0 - Critical Research Gap)
+### 4. Line Shopping (Priority 0 - ✅ IMPLEMENTED)
 
-**Status:** ❌ Not implemented (CRITICAL for Week 1-2)
+**Status:** ✅ Implemented (Oct 12, 2025)
 **Impact:** +1-2% ROI improvement immediately
 
-**Current Behavior:** Uses first available odds from any sportsbook
-**Target Behavior:** Compare all 9 sportsbooks, select best decimal odds
-
-**Research Quote:** "Line shopping for best odds" is a core edge component
-
 **Implementation:**
+- `packages/shared/shared/line_shopping.py` - Standalone module with 3 functions
+- Integrated into `ops/scripts/generate_signals_v2.py`
+- Compares all 9 sportsbooks, selects highest decimal odds (best value for bettor)
+- Tracks odds improvement percentage vs average
+- Logs line shopping benefits when >0.5% improvement
+
+**How It Works:**
 ```python
-# Compare all books, return highest decimal odds
-def select_best_odds(game, market, selection):
-    all_odds = fetch_from_all_sportsbooks(game, market, selection)
-    return max(all_odds, key=lambda x: x['odds_decimal'])
+# Groups odds by (market_id, selection)
+# Selects best odds (highest decimal = best value)
+odds_list_sorted = sorted(odds_list, key=lambda x: float(x['odds_decimal']), reverse=True)
+best_odds = odds_list_sorted[0]
+odds_improvement_pct = ((best_odds_decimal - avg_odds) / avg_odds) * 100
 ```
+
+**Research Quote:** "Line shopping for best odds" is a core edge component ✅ COMPLETE
 
 ### 5. Signal Generation Flow
 
@@ -492,17 +497,18 @@ See `claude/ROADMAP.md` and `claude/RESEARCH_ALIGNMENT.md` for full details.
 
 ### **Phase 1A: Quick Wins & Validation** (Weeks 1-4) ← YOU ARE HERE
 
-**Week 1-2: Line Shopping** ⭐ CRITICAL
-- Implement best-odds selection across 9 sportsbooks
+**✅ Week 1-2: Line Shopping** (COMPLETE - Oct 12, 2025)
+- Implemented best-odds selection across 9 sportsbooks
 - Expected impact: +1-2% ROI immediately
+- See: `packages/shared/shared/line_shopping.py`
 
-**Week 3-4: Historical Backtesting** ⭐ CRITICAL
+**⏳ Week 3-4: Historical Backtesting** (NEXT)
 - Validate edge on 2+ years historical data
 - Target: 1000+ bets, ROI >3%, p-value <0.01
 
 **Ongoing: Paper Betting Accumulation**
-- Target: 1,000+ settled bets by end of Month 3
-- Monitor: ROI, CLV, win rate
+- Target: 1,000+ settled bets by end of Month 6
+- Monitor: ROI, CLV, win rate via `/progress` dashboard
 
 ### **Phase 1B: Model Refinement** (Months 2-3)
 - Weather & injury integration for NFL

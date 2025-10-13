@@ -602,6 +602,7 @@ class SignalGeneratorV2:
                 'sportsbook': sportsbook,
                 'odds_american': odds['odds_american'],
                 'line_value': line_value,
+                'selection': selection,
                 'fair_probability': round(fair_prob, 4),
                 'implied_probability': round(implied_prob, 4),  # Vig-removed
                 'raw_implied_probability': round(implied_prob_raw, 4),  # Original with vig
@@ -635,7 +636,8 @@ class SignalGeneratorV2:
             confidence_level=signal['confidence_level'],
             model_version=self.config['model_version'],
             expires_at=signal['expires_at'],
-            line_value=signal.get('line_value')
+            line_value=signal.get('line_value'),
+            selection=signal.get('selection')
         )
 
     def send_slack_notification(self, signals: List[Dict]):

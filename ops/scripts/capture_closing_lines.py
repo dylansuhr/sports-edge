@@ -99,6 +99,7 @@ class ClosingLineCapture:
                 s.sportsbook,
                 s.odds_american as entry_odds,
                 s.line_value,
+                s.selection,
                 s.created_at,
                 m.name as market_name
             FROM signals s
@@ -117,7 +118,14 @@ class ClosingLineCapture:
 
         return signals
 
-    def get_closing_odds(self, game_id: int, market_id: int, sportsbook: str, line_value: float = None) -> int:
+    def get_closing_odds(
+        self,
+        game_id: int,
+        market_id: int,
+        sportsbook: str,
+        line_value: float = None,
+        selection: str = None
+    ) -> int:
         """
         Get the most recent odds for a specific market/sportsbook/line combination.
 
@@ -126,6 +134,7 @@ class ClosingLineCapture:
             market_id: Market ID
             sportsbook: Sportsbook name
             line_value: Line value (for spreads/totals)
+            selection: Market side (team name, Over/Under, etc.)
 
         Returns:
             American odds (most recent), or None if not found
@@ -137,13 +146,22 @@ class ClosingLineCapture:
                 AND market_id = %s
                 AND sportsbook = %s
                 AND (line_value = %s OR (line_value IS NULL AND %s IS NULL))
+                AND (selection = %s OR (%s IS NULL AND selection IS NULL))
             ORDER BY fetched_at DESC
             LIMIT 1
         """
 
         with self.db.get_connection() as conn:
             with conn.cursor() as cur:
-                cur.execute(sql, (game_id, market_id, sportsbook, line_value, line_value))
+                cur.execute(sql, (
+                    game_id,
+                    market_id,
+                    sportsbook,
+                    line_value,
+                    line_value,
+                    selection,
+                    selection
+                ))
                 result = cur.fetchone()
 
                 if result:
@@ -186,17 +204,19 @@ class ClosingLineCapture:
             signal_id = signal['id']
             entry_odds = signal['entry_odds']
             line_value = signal.get('line_value')
+            selection = signal.get('selection')
 
             # Get closing odds
             closing_odds = self.get_closing_odds(
                 game_id,
                 signal['market_id'],
                 signal['sportsbook'],
-                line_value
+                line_value,
+                selection
             )
 
             if not closing_odds:
-                print(f"[CLV]     ⚠️  No closing odds found for signal #{signal_id} ({signal['sportsbook']})")
+                print(f"[CLV]     ⚠️  No closing odds found for signal #{signal_id} ({signal['sportsbook']} – {selection or 'unknown selection'})")
                 continue
 
             # Calculate CLV
