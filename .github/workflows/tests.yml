@@ -41,6 +41,8 @@ jobs:
 
       - name: Check dashboard build
         working-directory: apps/dashboard
+        env:
+          DATABASE_READONLY_URL: postgresql://dummy:dummy@localhost:5432/dummy
         run: |
           npm ci
           npm run lint
