@@ -14,17 +14,17 @@ mkdir -p "$PROJECT_DIR/logs"
 
 echo "[$(date)] Starting automation cycle..." >> "$LOG_FILE"
 
-# Fetch odds
+# Fetch odds (NFL-only until edge validated)
 echo "[$(date)] Fetching odds..." >> "$LOG_FILE"
-.venv/bin/python ops/scripts/odds_etl_v2.py --leagues nfl,nba,nhl >> "$LOG_FILE" 2>&1
+.venv/bin/python ops/scripts/odds_etl_v2.py --leagues nfl >> "$LOG_FILE" 2>&1
 
-# Generate signals
+# Generate signals (NFL-only)
 echo "[$(date)] Generating signals..." >> "$LOG_FILE"
-.venv/bin/python ops/scripts/generate_signals_v2.py --leagues nfl,nba,nhl >> "$LOG_FILE" 2>&1
+.venv/bin/python ops/scripts/generate_signals_v2.py --leagues nfl >> "$LOG_FILE" 2>&1
 
-# Capture closing lines (only during game windows)
+# Capture closing lines (NFL-only, only during game windows)
 echo "[$(date)] Capturing closing lines..." >> "$LOG_FILE"
-.venv/bin/python ops/scripts/capture_closing_lines.py --leagues nfl,nba,nhl --minutes-ahead 30 >> "$LOG_FILE" 2>&1
+.venv/bin/python ops/scripts/capture_closing_lines.py --leagues nfl --minutes-ahead 30 >> "$LOG_FILE" 2>&1
 
 echo "[$(date)] Automation cycle complete." >> "$LOG_FILE"
 echo "---" >> "$LOG_FILE"

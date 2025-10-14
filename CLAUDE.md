@@ -96,7 +96,7 @@ make verify      # Verify system health
 **Benefits:**
 - Deep expertise in NFL betting markets
 - Better model calibration (more data concentration)
-- Reduced API quota usage (144 vs 432 credits/month)
+- Reduced API quota usage (480 vs 1,440 credits/month for 3 sports)
 - Simpler decision-making and analysis
 
 **Sport Addition Criteria (Automated Milestone Detection):**
@@ -217,17 +217,18 @@ Odds → ELO Model → Fair Probability → Edge Calculation → Signal (if ≥ 
 ### 9. Automated Workflows (GitHub Actions)
 
 **Active Automation:**
-- **Odds ETL:** Every 5 hours, 7 days/week (NFL only) - Optimized for 500 credit/month free tier
+- **Odds ETL:** 16 runs/day (every 2 hours + 4 strategic times) - NFL only
 - **Signal Generation:** Every 20 minutes, 7 days/week (NFL only)
 - **Paper Betting:** Every 30 minutes (AI places mock bets + settles completed)
 - **Settlement:** Daily at 2 AM ET (settles bets, updates ELO + team ratings)
 - **CLV Capture:** Every 30 minutes (closing lines before games start)
 - **Performance Analysis:** Sundays 9 AM ET (weekly analysis + auto-tuning recommendations)
 - **Milestone Checking:** Daily at 8 AM ET (checks readiness for phase advancement + sport addition)
+- **System Monitoring:** Paused until Nov 1, 2025 (resumes hourly after credit reset)
 
 **API Quota Management:**
 - Free tier: 500 credits/month (The Odds API)
-- NFL-only schedule: 144 credits/month (356 credit buffer) - 67% reduction!
+- NFL-only schedule: 480 credits/month (20 credit buffer, 96% utilization)
 - API usage tracked in `api_usage_log` table
 - Quota exhaustion alerts loudly (not silent failures)
 

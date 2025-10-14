@@ -14,9 +14,9 @@ interface AutomationJob {
 const JOBS: AutomationJob[] = [
   {
     name: 'Odds ETL',
-    frequency: 'Every 15 minutes',
-    intervalMinutes: 15,
-    description: 'Fetches latest odds for NFL, NBA, NHL',
+    frequency: '16x daily',
+    intervalMinutes: 90,
+    description: 'Fetches latest odds for NFL (single-sport focus until edge validated)',
     colorClass: styles.colorBlue,
   },
   {

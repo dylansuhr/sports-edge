@@ -2,10 +2,11 @@ name: Odds ETL
 
 on:
   schedule:
-    # NFL-ONLY: Run every 15 minutes during NFL season (reduced API usage: 67% savings)
-    # 4 runs/hour × 24h × 30 days = 2880 runs = 144 credits (356 credit buffer vs 3-sport)
+    # NFL-ONLY: Optimized for 500 credit/month free tier
+    # 16 runs/day = 480 credits/month (96% utilization, 20 credit buffer)
     # Research-aligned: Single-sport focus until edge validated
-    - cron: '*/15 * * * *'  # Every 15 minutes
+    - cron: '0 */2 * * *'  # Every 2 hours (12 runs/day)
+    - cron: '0 1,7,13,19 * * *'  # Plus 4 strategic times: 1am, 7am, 1pm, 7pm UTC (4 runs/day)
   workflow_dispatch: # Allow manual trigger
 
 jobs:
