@@ -46,8 +46,27 @@ class Database:
 
     @contextmanager
     def get_connection(self):
-        """Get a database connection (context manager)."""
-        conn = psycopg2.connect(self.connection_string)
+        """Get a database connection (context manager) with retry logic."""
+        conn = None
+        last_error = None
+
+        # Retry connection establishment for transient failures
+        for attempt in range(self.max_retries):
+            try:
+                conn = psycopg2.connect(self.connection_string)
+                break
+            except psycopg2.OperationalError as e:
+                last_error = e
+                if attempt < self.max_retries - 1:
+                    wait_time = 2 ** attempt  # Exponential backoff: 1s, 2s, 4s
+                    print(f"[DB] Connection attempt {attempt + 1}/{self.max_retries} failed, retrying in {wait_time}s: {e}")
+                    time.sleep(wait_time)
+                else:
+                    raise DatabaseError(f"Failed to connect after {self.max_retries} attempts: {e}")
+
+        if conn is None:
+            raise DatabaseError(f"Failed to establish connection: {last_error}")
+
         try:
             yield conn
             conn.commit()
