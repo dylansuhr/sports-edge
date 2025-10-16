@@ -18,12 +18,13 @@
 6. [Phase 1A: Quick Wins (Weeks 1-2)](#phase-1a-quick-wins-weeks-1-2)
 7. [Phase 1B: Validation (Months 1-6)](#phase-1b-validation-months-1-6)
 8. [Phase 2: System Optimization (Months 6-9)](#phase-2-system-optimization-months-6-9)
-9. [Phase 3: Real Money Validation (Months 9-12)](#phase-3-real-money-validation-months-9-12)
-10. [Phase 4: NBA Expansion (Month 12+)](#phase-4-nba-expansion-month-12)
-11. [Phase 5: NHL Expansion (Month 15+)](#phase-5-nhl-expansion-month-15)
-12. [Architecture Deep Dive](#architecture-deep-dive)
-13. [Troubleshooting Guide](#troubleshooting-guide)
-14. [Development Workflow](#development-workflow)
+9. [Phase 2.5: Promo System Deployment (Month 9, Weeks 1-2)](#phase-25-promo-system-deployment-month-9-weeks-1-2)
+10. [Phase 3: Real Money Validation (Months 9-12)](#phase-3-real-money-validation-months-9-12)
+11. [Phase 4: NBA Expansion (Month 12+)](#phase-4-nba-expansion-month-12)
+12. [Phase 5: NHL Expansion (Month 15+)](#phase-5-nhl-expansion-month-15)
+13. [Architecture Deep Dive](#architecture-deep-dive)
+14. [Troubleshooting Guide](#troubleshooting-guide)
+15. [Development Workflow](#development-workflow)
 
 ---
 
@@ -766,6 +767,197 @@ update_bet_clv(bet_id, closing_odds)
 **Files:** `ops/scripts/track_clv.py` (new)
 
 **Estimated Effort:** 6-8 hours
+
+---
+
+## Phase 2.5: Promo System Deployment (Month 9, Weeks 1-2)
+
+**Status:** Future
+**Timeline:** 2-4 weeks before real money launch (Month 9)
+**Priority:** High (for Phase 3 success)
+**Expected Value:** $5,000-10,000 from new-customer bonuses
+
+### Overview
+
+Deploy promo tracking system 2-4 weeks before opening sportsbook accounts to:
+1. Build promo database (2-3 weeks of historical data)
+2. Identify highest-EV account opening bonuses
+3. Create multi-account strategy (7 accounts recommended)
+4. Calculate rollover requirements and expected ROI
+
+**Research Quote:** "New-customer bonuses are the highest-EV bets you'll ever make. Often 20-50% ROI."
+
+**Visual Trigger:** `/progress` dashboard will show "⚠️ Promo System Ready" milestone when Phase 2 reaches 50%+ completion.
+
+---
+
+### Implementation Tasks
+
+#### Task 1: Promo Scraper (4-6 hours)
+
+**Script:** `ops/scripts/scrape_promos.py`
+
+**Target Sites:**
+- OddsChecker, Covers, Legal Sports Report (promo aggregators, NOT sportsbooks)
+- Scraping aggregators is legally safer than direct sportsbook scraping
+
+**Method:** BeautifulSoup or Apify Sportsbook Scraper API
+
+**Output:** Writes to `promos` table (schema already exists in migration 0001)
+
+**Automation:** `.github/workflows/scrape_promos.yml` - Weekly runs (Sunday 9 AM ET)
+
+---
+
+#### Task 2: EV Calculator (3-4 hours)
+
+**Module:** `packages/shared/shared/promo_math.py`
+
+**Functions:**
+```python
+def calculate_promo_ev(promo_type, max_bonus, rollover, min_odds):
+    """
+    Calculates expected value for different promo types:
+    - Deposit Match: EV = bonus * (1 - (1/min_odds)^rollover)
+    - Risk-Free Bet: EV = bonus * 0.7 (approx 70% recovery)
+    - Odds Boost: EV = (boosted_odds - fair_odds) * stake
+    """
+    pass
+```
+
+**Integration:** Called from promo dashboard to rank offers by EV
+
+---
+
+#### Task 3: Dashboard Integration (2 hours)
+
+**File:** `apps/dashboard/app/promos/page.tsx` (already exists as placeholder!)
+
+**Features:**
+- Sort by estimated EV (descending)
+- Filter by: sportsbook, promo type, expiration date
+- Track status: 'available', 'in_progress', 'completed'
+- Display rollover progress bar
+
+**Database Connection:** `apps/dashboard/actions/promos.ts` (new)
+
+---
+
+#### Task 4: Database Schema Updates (1 hour)
+
+**Migration:** `infra/migrations/0014_add_promo_milestone.sql` ✅ Created
+
+**Adds:**
+- "Promo System Ready" milestone (Phase 3)
+- `user_status` column to `promos` table
+- `rollover_progress` column to `promos` table
+
+---
+
+#### Task 5: Documentation & Compliance (1 hour)
+
+**Updates:**
+- Add disclaimer to promo dashboard about ethical use
+- Document multi-account strategy
+- Update COMPLIANCE.md with promo usage guidelines
+
+---
+
+### Legal & Compliance
+
+**✅ SAFE:**
+- Scraping promo aggregator sites (they compile public info)
+- Tracking your own promo usage
+- Using promo APIs (Unabated, OpticOdds)
+
+**⚠️ RISKY:**
+- Scraping sportsbook sites directly (likely violates ToS)
+- Automating bet placement via promos (COMPLIANCE.md prohibits)
+- Bonus abuse (COMPLIANCE.md warns against this)
+
+**COMPLIANCE.md Section 2 Update:**
+> **Promo Tracking:** SportsEdge tracks publicly available promotional offers for research purposes. Users must comply with all sportsbook terms when using bonuses. Do not engage in bonus abuse or multi-accounting schemes prohibited by sportsbooks.
+
+---
+
+### Success Metrics
+
+- **Promos tracked:** 50+ active offers at any time
+- **Bonus capture:** $2,000-5,000 from new-customer bonuses (Month 10-11)
+- **Ongoing value:** +1% ROI from recurring promos (Month 12+)
+- **Time cost:** <30 minutes/week to review
+
+---
+
+### Timeline
+
+**Week 1-2 of Month 9 (Pre-Launch):**
+1. Build promo scraper (Day 1-2)
+2. Run scraper for 2-3 weeks to populate database
+3. Connect dashboard to promo table (Day 3)
+4. Add EV calculator (Day 4-5)
+5. Test + document (Day 6-7)
+
+**Month 10 (Real Money Launch):**
+1. Review promo dashboard
+2. Select best 7 sportsbook accounts based on EV
+3. Open accounts using new-customer bonuses
+4. Track rollover progress in database
+5. Combine promo bets with validated signals
+
+---
+
+### Milestone Criteria (Tracked on `/progress` Dashboard)
+
+**Milestone:** "Promo System Ready"
+**Phase:** Phase 3
+**Criteria:**
+1. ✅ Phase 2 (Optimized System) complete
+2. ⬜ Promo scraper operational
+3. ⬜ 2+ weeks of promo data collected
+4. ⬜ EV calculator validated
+5. ⬜ Dashboard page functional
+6. ⬜ Multi-account strategy documented
+
+**Visual Alert:** Shows on `/progress` dashboard 30 days before "Real Money Validation" milestone target date
+
+---
+
+### Files to Create
+
+**Backend:**
+- `ops/scripts/scrape_promos.py` - Promo scraper script
+- `packages/shared/shared/promo_math.py` - EV calculator
+
+**Dashboard:**
+- `apps/dashboard/actions/promos.ts` - Database queries
+
+**Automation:**
+- `.github/workflows/scrape_promos.yml` - Weekly scraper workflow
+
+**Database:**
+- `infra/migrations/0014_add_promo_milestone.sql` - ✅ Already created
+
+---
+
+### Estimated Total Effort
+
+**12-16 hours** (1-2 days of focused work)
+
+**Breakdown:**
+- Scraper: 4-6 hours
+- EV calculator: 3-4 hours
+- Dashboard: 2 hours
+- Schema: 1 hour (done)
+- Docs: 1 hour
+- Testing: 1-2 hours
+
+---
+
+### Dependencies
+
+- **Prerequisite:** Phase 2 (Optimized System) milestone at 50%+ completion
+- **Blocker if not ready:** Can still launch Phase 3 without promos, but leaves $5K+ on table
 
 ---
 

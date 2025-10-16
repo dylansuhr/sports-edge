@@ -78,6 +78,14 @@ This creates a complete audit trail for review and compliance verification.
 - ✅ Personal research and analysis permitted
 - ✅ Historical data caching in local database
 
+**Promo Tracking (Phase 3)**:
+- ✅ Scraping promo aggregator sites (OddsChecker, Covers, Legal Sports Report)
+- ✅ Tracking publicly available promotional offers for research
+- ❌ Scraping sportsbook sites directly for promos (likely violates ToS)
+- ❌ Automating bet placement to exploit bonuses
+- **Users must comply with all sportsbook terms when using bonuses**
+- **Do not engage in bonus abuse or multi-accounting schemes prohibited by sportsbooks**
+
 ### Sportsbook ToS
 
 **sports-edge does NOT**:

@@ -144,7 +144,10 @@ The following files have been **removed** to reduce clutter (content merged into
 | Add new sport | `CLAUDE.md` | Common Tasks → Adding a New Sport |
 | Review recent enhancements | `claude/ROADMAP.md` | Recent Enhancements (Oct 10, 2025) |
 | Plan Phase 1 work | `claude/ROADMAP.md` | Phase 1: Model Refinement |
+| **Prepare for real money betting** | `claude/ROADMAP.md` | **Phase 2.5: Promo System Deployment** |
+| **Review promo tracking plan** | `claude/ROADMAP.md` | **Phase 2.5 → Implementation Tasks** |
 | Check legal compliance | `COMPLIANCE.md` | Entire document |
+| **Review promo compliance** | `COMPLIANCE.md` | **Section 2 → Promo Tracking (Phase 3)** |
 | Review code quality | `claude/CODEBASE_ANALYSIS.md` | Code Quality Assessment |
 | Optimize performance | `claude/CODEBASE_ANALYSIS.md` | Performance Analysis |
 | Understand data flow | `claude/ROADMAP.md` | Architecture Deep Dive → Data Flow |

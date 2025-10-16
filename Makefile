@@ -59,6 +59,8 @@ migrate:
 	@psql "$$DATABASE_URL" -f infra/migrations/0014_add_selection_columns.sql || (echo "❌ Migration 0014 failed" && exit 1)
 	@echo "Running 0015_add_line_shopping_metrics.sql..."
 	@psql "$$DATABASE_URL" -f infra/migrations/0015_add_line_shopping_metrics.sql || (echo "❌ Migration 0015 failed" && exit 1)
+	@echo "Running 0016_add_promo_milestone.sql..."
+	@psql "$$DATABASE_URL" -f infra/migrations/0016_add_promo_milestone.sql || (echo "❌ Migration 0016 failed" && exit 1)
 	@echo "✅ All migrations successful"
 
 db-ping:
