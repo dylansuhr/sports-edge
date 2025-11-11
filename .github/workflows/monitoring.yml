@@ -4,10 +4,11 @@ on:
   schedule:
     # TEMPORARY PAUSE: Paused until quota reset (500/500 credits used)
     # Reason: API credits exhausted (Nov 11, 2025)
-    # Odds data is stale until credits reset (likely Dec 1 at 00:00 UTC)
+    # Quota resets 30 days after first API call (Oct 13) = Nov 12-13, 2025
     # This prevents false-positive CI failures during the waiting period
     # After quota reset: Will resume hourly health checks automatically
-    - cron: '0 * 1-31 12 *'  # Run every hour starting December 1st
+    - cron: '0 * 13-30 11 *'  # Resume Nov 13 (after quota reset)
+    - cron: '0 * * 12 *'  # Continue in December
   workflow_dispatch:
 
 jobs:

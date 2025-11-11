@@ -2,13 +2,18 @@ name: Odds ETL
 
 on:
   schedule:
-    # PAUSED: API quota exhausted (500/500 credits used as of Nov 11, 2025)
-    # Will resume automatically when quota resets (likely Dec 1, 2025)
     # NFL-ONLY: Optimized for 500 credit/month free tier
-    # 16 runs/day = 480 credits/month (96% utilization, 20 credit buffer)
+    # 16 unique runs/day = 480 credits/month (96% utilization, 20 credit buffer)
     # Research-aligned: Single-sport focus until edge validated
-    - cron: '0 */2 1-31 12 *'  # Every 2 hours starting December (12 runs/day)
-    - cron: '0 1,7,13,19 1-31 12 *'  # Plus 4 strategic times starting December (4 runs/day)
+    #
+    # Schedule breakdown:
+    # - Every 2 hours: 0,2,4,6,8,10,12,14,16,18,20,22 (12 runs)
+    # - Strategic times: 1,7,13,19 (4 additional runs)
+    # - Total unique hours: 16 runs/day (no overlaps)
+    #
+    # Quota monitoring (quota_monitoring.yml) alerts at 80%, 90%, 95%, 100%
+    - cron: '0 */2 * * *'  # Every 2 hours (12 runs/day)
+    - cron: '0 1,7,13,19 * * *'  # Plus 4 strategic times (4 runs/day)
   workflow_dispatch: # Allow manual trigger
 
 jobs:
@@ -29,6 +34,14 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r packages/models/requirements.txt
+
+      - name: Check API quota before ETL
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          THE_ODDS_API_KEY: ${{ secrets.THE_ODDS_API_KEY }}
+        run: |
+          python ops/scripts/check_api_quota.py || true
+        continue-on-error: true
 
       - name: Run odds ETL (NFL Only)
         env:
