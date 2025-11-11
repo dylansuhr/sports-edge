@@ -36,14 +36,32 @@ jobs:
           pip install -r packages/models/requirements.txt
 
       - name: Check API quota before ETL
+        id: quota-check
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           THE_ODDS_API_KEY: ${{ secrets.THE_ODDS_API_KEY }}
         run: |
-          python ops/scripts/check_api_quota.py || true
-        continue-on-error: true
+          set +e
+          python ops/scripts/check_api_quota.py --min-remaining 16
+          STATUS=$?
+          set -e
+          echo "quota_exit_code=$STATUS" >> "$GITHUB_OUTPUT"
+          if [ "$STATUS" -eq 4 ] || [ "$STATUS" -eq 2 ]; then
+            echo "skip_etl=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          else
+            echo "skip_etl=false" >> "$GITHUB_OUTPUT"
+          fi
+          if [ "$STATUS" -ne 0 ] && [ "$STATUS" -ne 1 ]; then
+            exit $STATUS
+          fi
+
+      - name: Skip ETL due to low quota
+        if: steps.quota-check.outputs.skip_etl == 'true'
+        run: echo "Skipping odds ETL run because API quota remaining is below 16 credits (safety buffer)."
 
       - name: Run odds ETL (NFL Only)
+        if: steps.quota-check.outputs.skip_etl != 'true'
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           THE_ODDS_API_KEY: ${{ secrets.THE_ODDS_API_KEY }}

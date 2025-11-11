@@ -39,8 +39,8 @@ def calculate_p_value_from_bets() -> float:
             cur.execute("""
                 SELECT profit_loss, stake
                 FROM paper_bets
-                WHERE status = 'settled'
-                AND profit_loss IS NOT NULL
+                WHERE status IN ('won', 'lost', 'push', 'void')
+                  AND profit_loss IS NOT NULL
             """)
             bets = cur.fetchall()
 
@@ -173,7 +173,9 @@ def check_milestone_criteria(milestone_id: int) -> Tuple[bool, Dict[str, Any]]:
             with db.get_connection() as conn:
                 with conn.cursor() as cur:
                     cur.execute("""
-                        SELECT COUNT(*) FROM paper_bets WHERE status = 'settled'
+                        SELECT COUNT(*)
+                        FROM paper_bets
+                        WHERE status IN ('won', 'lost', 'push', 'void')
                     """)
                     current = cur.fetchone()[0]
 
@@ -190,7 +192,7 @@ def check_milestone_criteria(milestone_id: int) -> Tuple[bool, Dict[str, Any]]:
             with db.get_connection() as conn:
                 with conn.cursor() as cur:
                     cur.execute("""
-                        SELECT roi_pct FROM paper_bankroll
+                        SELECT roi_percent FROM paper_bankroll
                         ORDER BY updated_at DESC LIMIT 1
                     """)
                     row = cur.fetchone()
@@ -209,19 +211,32 @@ def check_milestone_criteria(milestone_id: int) -> Tuple[bool, Dict[str, Any]]:
             with db.get_connection() as conn:
                 with conn.cursor() as cur:
                     cur.execute("""
-                        SELECT AVG(clv_percentage)
+                        SELECT AVG(clv_percent), COUNT(*)
                         FROM signals
-                        WHERE clv_percentage IS NOT NULL
+                        WHERE clv_percent IS NOT NULL
                     """)
                     row = cur.fetchone()
-                    current = float(row[0]) if row and row[0] else 0.0
+                    avg_clv = float(row[0]) if row and row[0] else 0.0
+                    sample_size = int(row[1] or 0)
 
-            met = current >= target
+            current = avg_clv
+            min_sample = criterion_config.get('min_sample', 50)
+
+            if sample_size < min_sample:
+                met = False
+                note = f"Insufficient CLV sample size ({sample_size}/{min_sample})"
+                print(f"    {note}")
+            else:
+                met = current >= target
+                note = None
+
             results[criterion_key] = {
                 'current': round(current, 2),
                 'target': target,
                 'met': met,
-                'description': description
+                'description': description,
+                'sample_size': sample_size,
+                'note': note
             }
             print(f"    {current:.2f}% / {target}% → {'✅' if met else '❌'}")
 

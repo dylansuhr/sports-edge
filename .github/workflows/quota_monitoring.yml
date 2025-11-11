@@ -30,8 +30,14 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           THE_ODDS_API_KEY: ${{ secrets.THE_ODDS_API_KEY }}
         run: |
+          set +e
           python ops/scripts/check_api_quota.py
-        continue-on-error: true
+          STATUS=$?
+          set -e
+          echo "exit_code=$STATUS" >> "$GITHUB_OUTPUT"
+          if [ "$STATUS" -ne 0 ] && [ "$STATUS" -ne 1 ] && [ "$STATUS" -ne 2 ]; then
+            exit $STATUS
+          fi
 
       - name: Create alert on high usage
         if: steps.quota_check.outputs.exit_code == 1 || steps.quota_check.outputs.exit_code == 2
