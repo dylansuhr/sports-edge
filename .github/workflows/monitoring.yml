@@ -2,12 +2,12 @@ name: System Monitoring
 
 on:
   schedule:
-    # TEMPORARY PAUSE: Resumed November 1st, 2025
-    # Reason: API credits exhausted (499/500 used Oct 7-9)
-    # Odds data is stale until credits reset on Nov 1 at 00:00 UTC
+    # TEMPORARY PAUSE: Paused until quota reset (500/500 credits used)
+    # Reason: API credits exhausted (Nov 11, 2025)
+    # Odds data is stale until credits reset (likely Dec 1 at 00:00 UTC)
     # This prevents false-positive CI failures during the waiting period
-    # After Nov 1: Will resume hourly health checks automatically
-    - cron: '0 * 1-31 11-12 *'  # Run every hour starting November 1st
+    # After quota reset: Will resume hourly health checks automatically
+    - cron: '0 * 1-31 12 *'  # Run every hour starting December 1st
   workflow_dispatch:
 
 jobs:
