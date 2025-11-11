@@ -304,9 +304,9 @@ class SignalGeneratorV2:
         Calculate when a signal should expire based on sport-specific risk factors.
 
         Sport-specific expiry windows (before game time):
-        - NFL: 48 hours (Wed/Fri injury reports create volatility)
-        - NBA: 24 hours (daily lineup changes, load management)
-        - NHL: 36 hours (goalie announcements, but more stable)
+        - NFL: 12 hours (closer to game = sharper lines, less wasted signals)
+        - NBA: 12 hours (daily lineup changes, load management)
+        - NHL: 12 hours (goalie announcements, but more stable)
 
         Args:
             game_scheduled_at: When the game starts
@@ -318,11 +318,11 @@ class SignalGeneratorV2:
         sport_lower = sport.lower()
 
         if sport_lower == 'nfl':
-            hours_before = 48  # Expire 2 days before game
+            hours_before = 12  # Expire 12 hours before game
         elif sport_lower == 'nba':
-            hours_before = 24  # Expire 1 day before game
+            hours_before = 12  # Expire 12 hours before game
         else:  # nhl and others
-            hours_before = 36  # Expire 1.5 days before game
+            hours_before = 12  # Expire 12 hours before game
 
         # Ensure game_scheduled_at is timezone-aware
         if game_scheduled_at.tzinfo is None:

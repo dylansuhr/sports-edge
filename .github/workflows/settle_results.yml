@@ -32,7 +32,7 @@ jobs:
           USE_API: true
           DATA_PROVIDER: theoddsapi
           LEAGUES: nfl
-          SETTLEMENT_LOOKBACK_DAYS: "2"
+          SETTLEMENT_LOOKBACK_DAYS: "45"
         run: |
           python ops/scripts/settle_results_v2.py --leagues nfl
 

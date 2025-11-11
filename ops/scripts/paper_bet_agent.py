@@ -148,7 +148,7 @@ class PaperBettingAgent:
                     WHEN s.confidence_level = 'medium' THEN 2
                     WHEN s.confidence_level = 'high' THEN 3
                   END >= %s
-              AND g.scheduled_at BETWEEN NOW() AND NOW() + INTERVAL '7 days'
+              AND g.scheduled_at BETWEEN NOW() AND NOW() + INTERVAL '14 days'
               AND s.id NOT IN (
                   SELECT signal_id FROM paper_bets WHERE status = 'pending'
               )
