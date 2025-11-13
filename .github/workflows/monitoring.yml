@@ -81,6 +81,7 @@ jobs:
                   sys.exit(1)
 
               # Check odds staleness
+              # Odds ETL runs every 2 hours, so allow up to 3 hours (with buffer)
               cur.execute('''
                   SELECT
                       MAX(fetched_at) as last_fetched,
@@ -94,7 +95,7 @@ jobs:
                   hours_ago = float(result[1])
                   print(f'Last odds fetched: {last_fetch} ({hours_ago:.2f} hours ago)')
 
-                  if hours_ago > 1:
+                  if hours_ago > 3:
                       print(f'WARNING: Odds are stale ({hours_ago:.2f} hours old)')
                       sys.exit(1)
               else:

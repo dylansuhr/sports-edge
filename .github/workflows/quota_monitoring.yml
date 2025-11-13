@@ -39,88 +39,38 @@ jobs:
             exit $STATUS
           fi
 
-      - name: Create alert on high usage
+      - name: Log quota alert
         if: steps.quota_check.outputs.exit_code == 1 || steps.quota_check.outputs.exit_code == 2
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const exitCode = ${{ steps.quota_check.outputs.exit_code }};
-            const title = exitCode == 2
-              ? '🚨 CRITICAL: API Quota Exhausted'
-              : '⚠️ WARNING: API Quota Running Low';
+        run: |
+          EXIT_CODE=${{ steps.quota_check.outputs.exit_code }}
 
-            const severity = exitCode == 2 ? 'critical' : 'high';
-            const message = exitCode == 2
-              ? 'API quota is completely exhausted (0 requests remaining). All workflows that depend on The Odds API will fail until quota resets.'
-              : 'API quota usage is above 95%. Consider reducing polling frequency or upgrading to a paid plan.';
+          if [ "$EXIT_CODE" == "2" ]; then
+            echo "::error::🚨 CRITICAL: API Quota Exhausted!"
+            echo "::error::API quota is completely exhausted (0 requests remaining)."
+            echo "::error::All workflows that depend on The Odds API will fail until quota resets."
+            echo ""
+            echo "Recommended Actions:"
+            echo "1. Wait for quota reset (typically 30 days after first API call)"
+            echo "2. Odds ETL will auto-skip when quota exhausted (already configured)"
+            echo "3. Consider upgrading to paid tier: https://the-odds-api.com/liveapi/guides/v4/#pricing"
+          else
+            echo "::warning::⚠️ WARNING: API Quota Running Low!"
+            echo "::warning::API quota usage is above 95%."
+            echo "::warning::Consider reducing polling frequency or upgrading to a paid plan."
+          fi
 
-            const body = `
-            ## API Quota Alert
-
-            ${message}
-
-            **Workflow Run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-            **Time:** ${new Date().toISOString()}
-
-            ### Current Status
-            Check the workflow logs for detailed quota information.
-
-            ### Recommended Actions
-
-            ${exitCode == 2 ? `
-            **Immediate Actions Required:**
-            1. Wait for quota reset (typically 30 days after first API call)
-            2. Temporarily disable odds_etl.yml workflow
-            3. Temporarily disable monitoring.yml workflow
-            4. Consider upgrading to paid tier: https://the-odds-api.com/liveapi/guides/v4/#pricing
-            ` : `
-            **Actions to Consider:**
-            1. Reduce odds polling frequency (e.g., from 16x/day to 12x/day)
-            2. Monitor usage more closely
-            3. Plan for paid tier if approaching limits regularly
-            `}
-
-            ### Impact
-            - Odds ETL will fail (no fresh data)
-            - Signal generation will use stale odds
-            - Paper betting will continue with existing signals
-            - Settlement may fail for new games
-
-            ### Free Tier Limits
-            - Total: 500 requests/month
-            - Current schedule: ~16 requests/day = ~480/month
-            - Buffer: ~20 requests (4%)
-
-            ### Upgrade Options
-            - **Starter:** $50/month (10,000 requests)
-            - **Pro:** $100/month (25,000 requests)
-            - **Premium:** $200/month (50,000 requests)
-
-            See: https://the-odds-api.com/liveapi/guides/v4/#pricing
-            `;
-
-            // Check if alert already exists
-            const issues = await github.rest.issues.listForRepo({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              state: 'open',
-              labels: 'api-quota'
-            });
-
-            if (issues.data.length === 0) {
-              await github.rest.issues.create({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                title: title,
-                body: body,
-                labels: ['api-quota', 'automation-failure', severity]
-              });
-            } else {
-              // Update existing issue
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: issues.data[0].number,
-                body: `**Update:** ${message}\n\nTime: ${new Date().toISOString()}`
-              });
-            }
+          echo ""
+          echo "### Impact"
+          echo "- Odds ETL will skip runs (no fresh data until reset)"
+          echo "- Signal generation will use existing odds"
+          echo "- Paper betting will continue with existing signals"
+          echo "- Settlement may fail for new games without odds data"
+          echo ""
+          echo "### Free Tier Limits"
+          echo "- Total: 500 requests/month"
+          echo "- Current schedule: ~16 requests/day = ~480/month"
+          echo ""
+          echo "### Upgrade Options"
+          echo "- Starter: \$50/month (10,000 requests)"
+          echo "- Pro: \$100/month (25,000 requests)"
+          echo "- Premium: \$200/month (50,000 requests)"
