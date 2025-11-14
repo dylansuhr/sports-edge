@@ -81,26 +81,36 @@ jobs:
                   sys.exit(1)
 
               # Check odds staleness
-              # Odds ETL runs every 2 hours, so allow up to 3 hours (with buffer)
-              cur.execute('''
-                  SELECT
-                      MAX(fetched_at) as last_fetched,
-                      EXTRACT(EPOCH FROM (NOW() - MAX(fetched_at))) / 3600 as hours_ago
-                  FROM odds_snapshots
-              ''')
-              result = cur.fetchone()
+              # Skip check until quota resets on Dec 1, 2025 (quota exhausted Nov 11)
+              from datetime import datetime, timezone
+              quota_reset_date = datetime(2025, 12, 1, 1, 57, 0, tzinfo=timezone.utc)
+              now = datetime.now(timezone.utc)
 
-              if result and result[0]:
-                  last_fetch = result[0]
-                  hours_ago = float(result[1])
-                  print(f'Last odds fetched: {last_fetch} ({hours_ago:.2f} hours ago)')
-
-                  if hours_ago > 3:
-                      print(f'WARNING: Odds are stale ({hours_ago:.2f} hours old)')
-                      sys.exit(1)
+              if now < quota_reset_date:
+                  days_until_reset = (quota_reset_date - now).days
+                  print(f'⏸️  Skipping odds staleness check (quota exhausted)')
+                  print(f'Quota resets: {quota_reset_date.strftime("%Y-%m-%d %H:%M UTC")} ({days_until_reset} days remaining)')
               else:
-                  print('WARNING: No odds snapshots found')
-                  sys.exit(1)
+                  # Odds ETL runs every 2 hours, so allow up to 3 hours (with buffer)
+                  cur.execute('''
+                      SELECT
+                          MAX(fetched_at) as last_fetched,
+                          EXTRACT(EPOCH FROM (NOW() - MAX(fetched_at))) / 3600 as hours_ago
+                      FROM odds_snapshots
+                  ''')
+                  result = cur.fetchone()
+
+                  if result and result[0]:
+                      last_fetch = result[0]
+                      hours_ago = float(result[1])
+                      print(f'Last odds fetched: {last_fetch} ({hours_ago:.2f} hours ago)')
+
+                      if hours_ago > 3:
+                          print(f'WARNING: Odds are stale ({hours_ago:.2f} hours old)')
+                          sys.exit(1)
+                  else:
+                      print('WARNING: No odds snapshots found')
+                      sys.exit(1)
 
               print('✓ System health check passed')
               cur.close()
